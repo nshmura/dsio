@@ -1,0 +1,9 @@
+package: github.com/nshmura/dslite
+import:
+- package: github.com/urfave/cli
+  version: ^1.19.1
+- package: gopkg.in/yaml.v2
+- package: cloud.google.com/go
+  version: ^0.6.0
+  subpackages:
+  - datastore

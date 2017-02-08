@@ -1,0 +1,86 @@
+hash: b65e79e390c8b604fa3e30a3e1f3658290fe171564fea1180c78231fbdaf79c3
+updated: 2017-02-09T03:00:23.648491789+09:00
+imports:
+- name: cloud.google.com/go
+  version: c116c7972ec94f148459a304d07a67ecbc770d4b
+  subpackages:
+  - compute/metadata
+  - datastore
+  - internal
+  - internal/atomiccache
+  - internal/fields
+- name: github.com/golang/protobuf
+  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  subpackages:
+  - proto
+  - protoc-gen-go/descriptor
+  - ptypes/struct
+  - ptypes/timestamp
+  - ptypes/wrappers
+- name: github.com/googleapis/gax-go
+  version: da06d194a00e19ce00d9011a13931c3f6f6887c7
+- name: github.com/urfave/cli
+  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
+- name: golang.org/x/net
+  version: 236b8f043b920452504e263bc21d354427127473
+  subpackages:
+  - context
+  - context/ctxhttp
+  - http2
+  - http2/hpack
+  - idna
+  - internal/timeseries
+  - lex/httplex
+  - trace
+- name: golang.org/x/oauth2
+  version: 4464e7848382e6f39db55097f70e1460bdf944b3
+  subpackages:
+  - google
+  - internal
+  - jws
+  - jwt
+- name: google.golang.org/api
+  version: 3d017632ea100549bbb3ae74c567d59f437ece0f
+  subpackages:
+  - googleapi/transport
+  - internal
+  - iterator
+  - option
+  - transport
+- name: google.golang.org/appengine
+  version: 2e4a801b39fc199db615bfca7d0b9f8cd9580599
+  subpackages:
+  - internal
+  - internal/app_identity
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/modules
+  - internal/remote_api
+  - internal/socket
+  - internal/urlfetch
+  - socket
+  - urlfetch
+- name: google.golang.org/genproto
+  version: b3e7c2fb04031add52c4817f53f43757ccbf9c18
+  subpackages:
+  - googleapis/api/annotations
+  - googleapis/datastore/v1
+  - googleapis/type/latlng
+- name: google.golang.org/grpc
+  version: 2a6bf6142e96942e4fb9c0dfb157ee5d3cecafaa
+  subpackages:
+  - codes
+  - credentials
+  - credentials/oauth
+  - grpclog
+  - internal
+  - metadata
+  - naming
+  - peer
+  - stats
+  - tap
+  - transport
+- name: gopkg.in/yaml.v2
+  version: a3f3340b5840cee44f372bddb5880fcbc419b46a
+testImports: []

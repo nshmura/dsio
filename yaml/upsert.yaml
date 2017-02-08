@@ -1,0 +1,41 @@
+name: test
+scheme:
+  namespace: default
+  kind: Book
+  keyType: auto
+  locale: Asia/Tokyo
+  properties:
+  - name: Title
+    type: string
+  - name: Sort
+    type: int
+  - name: Public
+    type: boolean
+  - name: CreatedAt
+    type: datetime
+    noindex: true
+
+entities:
+  - properties:
+    - name: Title
+      value: "Brave New World"
+    - name: Sort
+      value: 1
+    - name: Public
+      value: true
+    - name: CreatedAt
+      value: "2017-01-01"
+      format: "2006-01-02"
+
+  - properties:
+    - name: Title
+      value: "The Old Man and the Sea"
+    - name: Sort
+      value: 2
+    - name: Public
+      value: true
+    - name: CreatedAt
+      value: "1952-01-01"
+      format: "2006-01-02"
+
+
