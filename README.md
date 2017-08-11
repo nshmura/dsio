@@ -9,7 +9,7 @@ And any issue requests and bug reports are welcome :)
 - Query entities by GQL from Datastore
 
 
-![dsio query](./docs/dsio.gif)
+![dsio query](./docs/cli.gif)
 
 # Getting Started
 ### Installation
