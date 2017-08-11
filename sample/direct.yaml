@@ -1,0 +1,56 @@
+scheme:
+  namespace: production
+  kind: Book
+  time-format: "2006-01-02"
+  time-locale: America/New_York
+
+entities:
+  - Title:
+      __string__: "Brave New World"
+      __noindex__: true
+
+    CreatedAt:
+      __datetime__: "1932-01-01"
+
+    Sort:
+      __int__: 100
+
+    Price:
+      __float__: 18.38
+
+    Public:
+      __bool__: true
+
+    Authoer:
+      __key__: [ class, HumanKind, author, "Aldous Huxley" ]
+
+    Location:
+      __geo__: [51.507222, -0.1275]
+
+    Types:
+      __array__: [ Hardcover, PaperBack ]
+
+    Image:
+      __blob__: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII="
+
+    Condition:
+      __null__: null
+
+    Info:
+      Language:
+        __string__: English
+
+      Pages:
+        __int__: 128
+
+      Weight:
+        __float__: 2.9
+
+      New:
+        __bool__: true
+
+      SubTypes:
+        __array__: [Hardcover, PaperBack]
+
+      Condition:
+        __null__: null

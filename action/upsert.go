@@ -1,189 +1,122 @@
 package action
 
 import (
-	"cloud.google.com/go/datastore"
+	"context"
 	"fmt"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"log"
-	"strconv"
-	"time"
+	"math"
+
+	"cloud.google.com/go/datastore"
+	"github.com/nshmura/dsio/core"
 )
 
 const (
-	KeyTypeAuto = "auto"
-	KeyTypeName = "name"
-
-	TypeString   = "string"
-	TypeDatetime = "datetime"
-	TypeInteger  = "int"
-	TypeFloat    = "float"
-	TypeBool     = "boolean"
-	TypeKey      = "key"
-	TypeGeo      = "geo"
-	TypeArray    = "array"
-	TypeEmbedded = "embedded"
-	TypeNull     = "null"
+	maxBatchSize = 500 // The number of entities per one multi upsert operation
 )
 
-type UpsertFile struct {
-	Scheme   Scheme
-	Entities []Entity
-}
+// Upsert entities form yaml file to datastore
+func UpsertFromYAML(ctx core.Context, filename string, batchSize int) error {
 
-type Scheme struct {
-	Namespace string
-	Kind      string
-	KeyType   string `yaml:"keyType"`
-	Locale    string
+	if !ctx.Verbose {
+		defer func() {
+			if r := recover(); r != nil {
+				core.Error(r)
+			}
+		}()
+	}
 
-	Properties []SchemeProperty
-}
+	if batchSize == 0 {
+		batchSize = maxBatchSize
+	}
+	if batchSize > maxBatchSize {
+		return core.Errorf("batch-size should be smaller than %d\n", maxBatchSize)
+	}
 
-type SchemeProperty struct {
-	Name    string
-	Type    string
-	NoIndex bool `yaml:"noindex"`
-}
+	parser := core.NewYAMLParser()
 
-type Entity struct {
-	Key        string
-	Properties []EntityProperty
-}
+	// Read from file
+	if err := parser.ReadFile(filename); err != nil {
+		return core.Error(err)
+	}
 
-type EntityProperty struct {
-	Name   string
-	Value  string
-	Format string // used for time.ParseInLocation()
-}
+	// Validate
+	if err := parser.Validate(ctx); err != nil {
+		return core.Error(err)
+	}
 
-func Upsert(filename string) {
-
-	source, err := ioutil.ReadFile(filename)
+	// Parse
+	dsEntities, err := parser.Parse()
 	if err != nil {
-		panic(err)
+		return core.Error(err)
 	}
 
-	f := &UpsertFile{}
-	err = yaml.Unmarshal([]byte(source), f)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	// Upsert to datastore
+	if !ctx.DryRun {
+		client := core.CreateDatastoreClient(ctx)
 
-	fmt.Println(f)
+		allPage := int(math.Ceil(float64(len(*dsEntities)) / float64(batchSize)))
+		for page := 0; page < allPage; page++ {
 
-	es := getEntities(f)
+			from := page * batchSize
+			to := (page + 1) * batchSize
+			if to > len(*dsEntities) {
+				to = len(*dsEntities)
+			}
 
-	fmt.Println(es)
+			// Confirm
+			if page > 0 {
+				msg := fmt.Sprintf("Do you want to upsert more entities (No.%d - No.%d)? ", from+1, to)
+				ok, err := core.ConfirmYesNoWithDefault(msg, true)
+				if err != nil {
+					core.Error(err)
+					break
+				}
+				if !ok {
+					break
+				}
+			}
 
-}
+			core.Infof("Upserting %d entities...\n", to-from)
 
-func getEntities(f *UpsertFile) []datastore.Entity {
+			// Upsert multi entities
+			keys, src := getKeysValues(ctx, dsEntities, from, to)
 
-	var res []datastore.Entity
-	for _, pe := range f.Entities {
-		res = append(res, getEntity(f.Scheme, pe))
-	}
-	return res
-}
-
-func getEntity(scheme Scheme, entity Entity) datastore.Entity {
-
-	k := getKey(scheme, entity)
-
-	var ps []datastore.Property
-
-	for _, p := range entity.Properties {
-		ps = append(ps, getProperty(scheme, p))
-	}
-
-	return datastore.Entity{
-		Key:        k,
-		Properties: ps,
-	}
-}
-
-func getKey(scheme Scheme, entity Entity) *datastore.Key {
-
-	switch scheme.KeyType {
-	case KeyTypeAuto:
-		return datastore.IncompleteKey(scheme.Kind, nil) //TODO Parent Key
-
-	case KeyTypeName:
-		return datastore.NameKey(scheme.Kind, entity.Key, nil) //TODO Parent Key
-
-	default:
-		panic(fmt.Sprintf("key type should one of %v, %v. %v not supported.", KeyTypeAuto, KeyTypeName, scheme.KeyType))
-	}
-}
-
-func getProperty(scheme Scheme, property EntityProperty) datastore.Property {
-
-	sp := getSchemeProperty(scheme, property)
-
-	return datastore.Property{
-		Name:    property.Name,
-		Value:   getValue(scheme, sp, property),
-		NoIndex: sp.NoIndex,
-	}
-}
-
-func getSchemeProperty(scheme Scheme, property EntityProperty) SchemeProperty {
-	for _, s := range scheme.Properties {
-		if s.Name == property.Name {
-			return s
+			if _, err := client.PutMulti(context.Background(), keys, src); err != nil {
+				if me, ok := err.(datastore.MultiError); ok {
+					for i, e := range me {
+						if e != nil {
+							core.Errorf("Upsert error(entity No.%v): %v\n", i+1, e)
+						}
+					}
+				} else {
+					core.Errorf("Upsert error: %v\n", err)
+				}
+			} else {
+				core.Infof("%d entities ware upserted successfully.\n", len(keys))
+			}
 		}
 	}
-	panic(fmt.Sprintf("scheme property of %v not found.", property.Name))
+	return nil
 }
 
-func getValue(scheme Scheme, sp SchemeProperty, ep EntityProperty) interface{} {
-	switch sp.Type {
-	case TypeString:
-		return ep.Value
+func getKeysValues(ctx core.Context, dsEntities *[]datastore.Entity, from, to int) (keys []*datastore.Key, values []interface{}) {
 
-	case TypeDatetime:
-		loc, err := time.LoadLocation(scheme.Locale)
-		if err != nil {
-			panic(fmt.Sprintf("cannot load location from %v.", scheme.Locale))
+	// Prepare entities
+	for _, e := range (*dsEntities)[from:to] {
+
+		k := core.KeyToString(e.Key)
+		if k == `""` {
+			k = "(auto)"
+		}
+		if ctx.Verbose {
+			core.Infof(" entity> Key=%v Props=%v\n", k, e.Properties)
+		} else {
+			core.Infof(" entity> Key=%v\n", k)
 		}
 
-		t, err := time.ParseInLocation(ep.Format, ep.Value, loc)
-		if err != nil {
-			panic(fmt.Sprintf("cannot parse time. %v.", err))
-		}
-		return t
-
-	case TypeInteger:
-		num, err := strconv.ParseInt(ep.Value, 10, 64)
-		if err != nil {
-			panic(fmt.Sprintf("cannot parse int. %v", err))
-		}
-		return num
-
-	case TypeFloat:
-		num, err := strconv.ParseFloat(ep.Value, 64)
-		if err != nil {
-			panic(fmt.Sprintf("cannot parse int. %v", err))
-		}
-		return num
-
-	case TypeBool:
-		num, err := strconv.ParseBool(ep.Value)
-		if err != nil {
-			panic(fmt.Sprintf("cannot parse int. %v", err))
-		}
-		return num
-
-	case TypeNull:
-		return nil
-
-	case TypeKey:
-	case TypeGeo:
-	case TypeArray:
-	case TypeEmbedded:
-		panic(fmt.Sprintf("sorry... property type %v not supported.", sp.Type))
+		keys = append(keys, e.Key)
+		props := datastore.PropertyList(e.Properties)
+		values = append(values, &props)
 	}
 
-	panic(fmt.Sprintf("property type %v not supported.", sp.Type))
+	return
 }

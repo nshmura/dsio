@@ -1,0 +1,58 @@
+# Scheme of Entities
+scheme:
+  namespace: production
+  kind: Book
+  time-format: "2006-01-02"
+  time-locale: America/New_York
+  properties:
+    Title: string
+    Sort: int
+    Price: float
+    Public: bool
+    CreatedAt: datetime
+    UpdatedAt: datetime
+    RegisteredAt: datetime
+    Location: geo
+    Types: array
+    Authoer: key
+    Image: [blob, noindex]
+    Info: [embed, noindex]
+    Empty: "null"
+
+# Default values for entities
+default:
+  Public: false
+  RegisteredAt: __current__
+
+# Entities to be registered in datastore
+entities:
+  - __key__: [ Category, "ScienceFictionFantasy", SubCategory, "GeneticEngineering", Book, "1"]
+    Title: "Brave New World"
+    Sort: 100
+    Price: 18.38
+    Public: true
+    CreatedAt: "1932-01-01"
+    UpdatedAt: __current__
+    Location: [51.507222, -0.1275]
+    Types: [Hardcover, PaperBack]
+    Authoer: [ class, HumanKind, author, "Aldous Huxley" ]
+    Image: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII="
+    Condition: null
+
+  - __key__: [ Category, "LiteratureFiction", SubCategory, "GenreFiction", Book, "2"]
+    Title: "The Old Man and the Sea"
+    Sort: 200
+    Price: 15.27
+    CreatedAt: "1952-01-01"
+    UpdatedAt: __current__
+    Location: [27.114287, -90.167409]
+    Types: [Hardcover, PaperBack]
+    Authoer: [ class, HumanKind, author, "Ernest Hemingway" ]
+    Image: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII="
+    Condition: null
+    Info:
+      Language: English
+      Pages: 128
+      Weight: 2.9
+      New: true
+      ReviewedAt: 2015-02-24T18:19:39Z

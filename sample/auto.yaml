@@ -1,0 +1,18 @@
+scheme:
+  namespace: production
+  kind: Book
+
+entities:
+  - Title: "Brave New World"
+    Sort: 100
+    Price: 18.38
+    Public: true
+    Types: [Hardcover, PaperBack]
+    Condition: null
+    Info:
+      Language: English
+      Pages: 128
+      Weight: 2.9
+      New: true
+      SubTypes: [Hardcover, PaperBack]
+      Condition: null

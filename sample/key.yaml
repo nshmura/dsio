@@ -1,0 +1,10 @@
+scheme:
+  kind: Category
+  key: CategoryID
+
+entities:
+  - CategoryID: 1
+    CategoryName: "News"
+
+  - CategoryID: 1
+    CategoryName: "Popular"

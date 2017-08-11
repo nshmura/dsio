@@ -1,0 +1,14 @@
+scheme:
+  kind: Book
+
+entities:
+  - __key__: 1
+    Title: "Brave New World"
+    Sort: 100
+    CreatedAt: "1932-01-01"
+
+  - __key__: 2
+    Title: "The Old Man and the Sea"
+    Sort: 200
+    CreatedAt: "1952-01-01"
+
