@@ -2,7 +2,7 @@
 
 `dsio` is a command line tool for [Google Cloud Datastore](https://cloud.google.com/datastore/). 
 As this tool is under development, please use this tool in your own risk. 
-And any issue requests and bug reports are welcome :) 
+And any feature requests or bug reports are welcome :) 
 
 ### Features
 - Bulk upsert entities to Datastore
