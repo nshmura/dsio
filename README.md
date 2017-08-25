@@ -46,7 +46,7 @@ $ dsio upsert filename.yaml -f yaml
 
 To specify namespace (e.g. `production` namespace):
 ```
-$ dsio upsert simple.yaml -f yaml -n production
+$ dsio upsert filename.yaml -f yaml -n production
 ```
 
 
