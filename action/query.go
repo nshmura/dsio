@@ -79,7 +79,7 @@ func readQuery() (string, error) {
 		return bufio.NewReader(os.Stdin).ReadString('\n')
 
 	} else {
-		return "", errors.New("Pipe not supported")
+		return "", errors.New("pipe not supported")
 	}
 }
 
@@ -108,7 +108,7 @@ func parseGQL(gqlStr string) (*gql.SelectExpr, error) {
 	}
 	selectExpr, ok := l.Result.(gql.SelectExpr)
 	if !ok {
-		return nil, fmt.Errorf("can't convert to Select: %v", l.Result)
+		return nil, fmt.Errorf("can not convert to Select: %v", l.Result)
 	}
 	return &selectExpr, nil
 }

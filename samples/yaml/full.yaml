@@ -1,6 +1,6 @@
 # Scheme of Entities
 scheme:
-  namespace: production
+  namespace: development
   kind: Book
   properties:
     Title: string

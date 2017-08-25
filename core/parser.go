@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/datastore"
+	"strings"
 )
 
 type FileParser interface {
@@ -103,7 +104,7 @@ func (p *Parser) ParseEntity(entity Entity) (dsEntity datastore.Entity, err erro
 	// Default Values
 	for name, val := range d.Default {
 		if IsKeyValueName(name) {
-			err = fmt.Errorf("%v can't be as Default value", name)
+			err = fmt.Errorf("%v cannot be as default value", name)
 			return
 		}
 		if _, ok := entity[name]; !ok {
@@ -129,8 +130,18 @@ func (p *Parser) ParseEntity(entity Entity) (dsEntity datastore.Entity, err erro
 func (p *Parser) parseKeyList(val interface{}) *datastore.Key {
 	d := p.kindData
 
-	keys, ok := val.([]interface{})
+	if s, ok := val.(string); ok {
+		if strings.HasPrefix(s, "[") && strings.HasSuffix(s, "]") {
+			var arr []interface{}
+			if err := DecodeJSON(s, &arr); err != nil {
+				return nil
+			} else {
+				val = arr
+			}
+		}
+	}
 
+	keys, ok := val.([]interface{})
 	if !ok {
 		return p.parseKey(d.Scheme.Kind, val, nil)
 	}
@@ -156,6 +167,8 @@ func (p *Parser) parseKey(kind string, val interface{}, parent *datastore.Key) *
 	case string:
 		return p.getDSNamedKey(kind, v, parent)
 	case int:
+		return p.getDSIDKey(kind, int64(v), parent)
+	case int32:
 		return p.getDSIDKey(kind, int64(v), parent)
 	case int64:
 		return p.getDSIDKey(kind, v, parent)
@@ -269,7 +282,7 @@ func (p *Parser) parseValueAutomatically(val interface{}) (value interface{}, no
 		}
 
 	default:
-		err = fmt.Errorf("can't parse value:%v", v)
+		err = fmt.Errorf("can not parse value:%v", v)
 	}
 	return
 }
@@ -316,12 +329,12 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 			if t, ok := p.parseTimestamp(v, loc); ok {
 				value = t
 			} else {
-				err = fmt.Errorf("can't parse '%v' as time.", v)
+				err = fmt.Errorf("can not parse '%v' as time.", v)
 			}
 
 		} else {
 			if t, e := time.ParseInLocation(d.Scheme.TimeFormat, v, loc); e != nil {
-				err = fmt.Errorf("can't parse '%v' as time.", e)
+				err = fmt.Errorf("can not parse '%v' as time.", e)
 			} else {
 				value = t
 			}
@@ -329,7 +342,7 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 
 	case TypeInteger, TypeInt:
 		if num, e := strconv.ParseInt(ToString(val), 10, 64); e != nil {
-			err = fmt.Errorf("can't parse '%v' as int.", e)
+			err = fmt.Errorf("can not parse '%v' as int.", e)
 		} else {
 			value = num
 		}
@@ -337,7 +350,7 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 	case TypeFloat:
 		if num, ok := val.(float64); !ok {
 			if num, err := strconv.ParseFloat(ToString(val), 64); err != nil {
-				err = fmt.Errorf("can't parse '%v' as bool.", val)
+				err = fmt.Errorf("can not parse '%v' as bool.", val)
 			} else {
 				value = num
 			}
@@ -347,7 +360,7 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 
 	case TypeBoolean, TypeBool:
 		if num, err := strconv.ParseBool(ToString(val)); err != nil {
-			err = fmt.Errorf("can't parse '%v' as bool.", val)
+			err = fmt.Errorf("can not parse '%v' as bool.", val)
 		} else {
 			value = num
 		}
@@ -359,33 +372,58 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 		value = p.parseKeyList(val)
 
 	case TypeGeo:
-		value = p.parseGeoPoint(val)
+		if value, err = p.parseGeoPoint(val); err != nil {
+			return
+		}
 
 	case TypeArray:
-		if arr, ok := val.([]interface{}); !ok {
-			err = fmt.Errorf("can't parse '%v' as array.", val)
-		} else {
+		switch t := val.(type) {
+		case []interface{}:
+			value, err = p.parseArray(t)
+
+		case string:
+			var arr []interface{}
+			if err = DecodeJSON(t, &arr); err != nil {
+				return
+			}
 			value, err = p.parseArray(arr)
+
+		default:
+			err = fmt.Errorf("can not parse '%v' as array.", val)
 		}
 
 	case TypeBlob:
 		blob, ok := val.(string)
 		if !ok {
-			err = fmt.Errorf("can't parse '%v' as base64 stings.", val)
+			err = fmt.Errorf("can not parse '%v' as base64 stings.", val)
 			break
 		}
 		if b, e := base64.StdEncoding.DecodeString(blob); e != nil {
-			err = fmt.Errorf("can't parse '%v' as base64 stings.(%v)", val, e)
+			err = fmt.Errorf("can not parse '%v' as base64 stings.(%v)", val, e)
 		} else {
 			value = b
 		}
 
 	case TypeEmbed:
-		embed, ok := val.(map[interface{}]interface{})
-		if !ok {
-			err = fmt.Errorf("can't parse '%v' as embed", val)
+		switch t := val.(type) {
+		case map[interface{}]interface{}:
+			value, err = p.parseEmbed(t)
+
+		case string:
+			var json map[string]interface{}
+			if err = DecodeJSON(t, &json); err != nil {
+				err = fmt.Errorf("can not parse '%v' as json.", json)
+			} else {
+				embed := make(map[interface{}]interface{})
+				for k, v := range json {
+					embed[k] = v
+				}
+				value, err = p.parseEmbed(embed)
+			}
+
+		default:
+			err = fmt.Errorf("can not parse '%v' as embed.", val)
 		}
-		value, err = p.parseEmbed(embed)
 
 	default:
 		err = fmt.Errorf("property type '%v' is not supported.", spType)
@@ -457,27 +495,44 @@ func (p *Parser) parseTimestamp(v interface{}, loc *time.Location) (time.Time, b
 	return emptyTime, false
 }
 
-func (p *Parser) parseGeoPoint(val interface{}) datastore.GeoPoint {
-	geo, ok := val.([]interface{})
-	if !ok {
-		panic(Panicf("can't parse '%v' as geo point.", val))
+func (p *Parser) parseGeoPoint(val interface{}) (point datastore.GeoPoint, err error) {
+
+	var geo []interface{}
+	switch t := val.(type) {
+	case []interface{}:
+		geo = t
+
+	case string:
+		if err = DecodeJSON(t, &geo); err != nil {
+			return
+		}
 	}
+
+	if geo == nil {
+		err = fmt.Errorf("can not parse '%v' as geo.", val)
+		return
+	}
+
 	if len(geo) != 2 {
-		panic(Panicf("can't parse '%v' as geo point.", val))
+		err = fmt.Errorf("can not parse '%v' as geo point.", val)
+		return
 	}
 
 	lat, err := ToFloat64(geo[0])
 	if err != nil {
-		panic(Panicf("can't parse '%v' as geo point.", val))
+		err = fmt.Errorf("can not parse '%v' as geo point.", val)
+		return
 	}
 
 	lng, err := ToFloat64(geo[1])
 	if err != nil {
-		panic(Panicf("can't parse '%v' as geo point.", val))
+		err = fmt.Errorf("can not parse '%v' as geo point.", val)
+		return
 	}
 
-	return datastore.GeoPoint{
+	point = datastore.GeoPoint{
 		Lat: lat,
 		Lng: lng,
 	}
+	return
 }

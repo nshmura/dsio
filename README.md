@@ -24,29 +24,28 @@ export DSIO_KEY_FILE=/path/to/service_account_file.json
 export DSIO_PROJECT_ID=your-gcp-project-id
 ```
 
-Or set `key-file` option and `project-id` option. <br>
-like below `import` command:
+Or specify `--key-file` and `--project-id` options:
 ```
-$ dsio upsert --key-file /path/to/service_account_file.json --project-id your-gcp-project-id
+$ dsio upsert --key-file <path-to-service_account_file> --project-id <project-id> ...
 ```
 
 
 # Bulk upsert entities into Datastore
 To upsert entities from CSV file (e.g. upsert into `Book` kind): 
 ```
-$ dsio upsert filename.csv -f csv -k Book
+$ dsio upsert filename.csv -k Book
 ```
 
 
 To upsert entities from YAML file:
 ```
-$ dsio upsert filename.yaml -f yaml
+$ dsio upsert filename.yaml
 ```
 
 
-To specify namespace (e.g. `production` namespace):
+To specify namespace (e.g. `development` namespace):
 ```
-$ dsio upsert filename.yaml -f yaml -n production
+$ dsio upsert filename.yaml -n development
 ```
 
 
