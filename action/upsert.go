@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-
 	"path/filepath"
 	"strings"
 
@@ -13,8 +12,8 @@ import (
 )
 
 const (
-	// The number of entities per one multi upsert operation
-	maxBatchSize = 500
+	// MaxBatchSize The number of entities per one multi upsert operation
+	MaxBatchSize = 500
 )
 
 // Upsert entities form yaml file to datastore
@@ -45,9 +44,9 @@ func Upsert(ctx core.Context, filename, kind, format string, batchSize int) erro
 
 	// BatchSize
 	if batchSize == 0 {
-		batchSize = maxBatchSize
-	} else if batchSize > maxBatchSize {
-		return core.Errorf("batch-size should be smaller than %d\n", maxBatchSize)
+		batchSize = MaxBatchSize
+	} else if batchSize > MaxBatchSize {
+		return core.Errorf("batch-size should be smaller than %d\n", MaxBatchSize)
 	}
 
 	// Parser

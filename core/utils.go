@@ -1,15 +1,14 @@
 package core
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
-	"bufio"
-	"os"
-
 	"cloud.google.com/go/datastore"
-	"encoding/json"
 )
 
 func ToString(value interface{}) string {
@@ -35,6 +34,19 @@ func ToFloat64(val interface{}) (float64, error) {
 		return strconv.ParseFloat(v, 64)
 	}
 	return 0, fmt.Errorf("can not convert %v to float64", val)
+}
+
+func GetTypeOfKey(k *datastore.Key) DatastoreType {
+	if k.Parent != nil {
+		return TypeArray
+	}
+	if k.Name != "" {
+		return TypeString
+	}
+	if k.ID > 0 {
+		return TypeInt
+	}
+	panic(Panicf("unsupported key:%v", k))
 }
 
 func KeyToString(k *datastore.Key) string {
@@ -71,7 +83,7 @@ func ConfirmYesNo(msg string) (bool, error) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		Conform(msg + " (y/n):")
+		Conform(msg + " (y/n): ")
 
 		answer, err := reader.ReadString('\n')
 		if err != nil {
@@ -127,4 +139,9 @@ func ConfirmYesNoWithDefault(msg string, defaultValue bool) (bool, error) {
 
 func DecodeJSON(str string, value interface{}) error {
 	return json.Unmarshal([]byte(str), value)
+}
+
+func EncodeJSON(value interface{}) (string, error) {
+	bytes, err := json.Marshal(value)
+	return string(bytes), err
 }

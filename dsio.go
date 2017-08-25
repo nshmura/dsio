@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 )
 
 const (
-	version = "0.2.0"
+	version = "0.4.0"
 
 	// the number of entities to output at once
 	defaultPageSize = 50
@@ -70,20 +71,20 @@ func main() {
 				FlagNamespace,
 				cli.StringFlag{
 					Name:  "kind, k",
-					Usage: "Name of destination kind.",
+					Usage: "name of destination kind.",
 				},
 				cli.StringFlag{
 					Name:  "format, f",
-					Usage: "Format of input file. <yaml|csv|tcv>.",
+					Usage: "format of input file. <yaml|csv|tcv>.",
 				},
 				cli.BoolFlag{
 					Name:  "dry-run",
-					Usage: "Skip Datastore operations.",
+					Usage: "skip Datastore operations.",
 				},
 				cli.IntFlag{
 					Name:  "batch-size",
-					Value: 500,
-					Usage: "The number of entities per one multi upsert operation. batch-size should be smaller than 500.",
+					Value: action.MaxBatchSize,
+					Usage: fmt.Sprintf("number of entities per one multi upsert operation. batch-size should be smaller than %s.", action.MaxBatchSize),
 				},
 				FlagServiceAccoutFile,
 				FlagProjectID,
@@ -118,22 +119,22 @@ func main() {
 				FlagNamespace,
 				cli.StringFlag{
 					Name:  "output, o",
-					Usage: "Output filename. Entities are outputed into this file.",
+					Usage: "output filename. Entities are outputed into this file.",
 				},
 				cli.StringFlag{
 					Name:  "format, f",
 					Value: "yaml",
-					Usage: "Format of output. <yaml|csv|tcv>.",
+					Usage: "format of output. <yaml|csv|tcv>.",
 				},
 				cli.StringFlag{
 					Name:  "style, s",
 					Value: "scheme",
-					Usage: "Style of output. <scheme|direct|auto>.",
+					Usage: "style of output. <scheme|direct|auto>. used only in yaml format.",
 				},
 				cli.IntFlag{
 					Name:  "page-size",
-					Value: 50,
-					Usage: "Number of entities to output at once.",
+					Value: defaultPageSize,
+					Usage: "number of entities to output at once.",
 				},
 				FlagServiceAccoutFile,
 				FlagProjectID,

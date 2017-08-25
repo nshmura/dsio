@@ -72,8 +72,7 @@ To specify namespace (e.g. `production` namespace):
 $ dsio query 'SELECT * FROM Book LIMIT 2' -n production 
 ```
 
-*In CSV (and TSV) format, all value is converted to string and `noindex` value is disappeared.
-So entities exported in CSV (and TSV) format are **different from original entities in Datastore.***
+**CAUTION:** In CSV and TSV format, `noindex` value will be removed.
 
 
 # Options

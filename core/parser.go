@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/datastore"
-	"strings"
 )
 
 type FileParser interface {
@@ -410,9 +410,13 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 			value, err = p.parseEmbed(t)
 
 		case string:
+			if t == "" {
+				value = ""
+				break
+			}
 			var json map[string]interface{}
 			if err = DecodeJSON(t, &json); err != nil {
-				err = fmt.Errorf("can not parse '%v' as json.", json)
+				err = fmt.Errorf("can not parse '%v' as json.", t)
 			} else {
 				embed := make(map[interface{}]interface{})
 				for k, v := range json {

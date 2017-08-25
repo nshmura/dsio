@@ -258,9 +258,9 @@ func getExporter(ctx core.Context, format string, style core.TypeStyle, kind str
 	// Exporter
 	switch format {
 	case core.FormatCSV:
-		return core.NewCSVExporter(writer, ',', ctx.Namespace, kind)
+		return core.NewCSVExporter(writer, ',')
 	case core.FormatTSV:
-		return core.NewCSVExporter(writer, '\t', ctx.Namespace, kind)
+		return core.NewCSVExporter(writer, '\t')
 	default:
 		return core.NewYAMLExport(writer, style, ctx.Namespace, kind)
 	}
