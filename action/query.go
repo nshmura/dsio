@@ -27,6 +27,7 @@ func Query(ctx core.Context, gqlStr, format string, style core.TypeStyle, filena
 		}
 		defer fp.Close()
 		if err != nil {
+			core.Error(err)
 			return err
 		}
 		w := bufio.NewWriter(fp)
@@ -34,61 +35,69 @@ func Query(ctx core.Context, gqlStr, format string, style core.TypeStyle, filena
 		writer = w
 	}
 
-	interactive := gqlStr == ""
-	for {
-		err := readQueryOutput(ctx, gqlStr, format, style, writer, pageSize)
-
+	if gqlStr == "" {
+		var err error
+		gqlStr, err = readQuery()
 		if err != nil {
 			core.Error(err)
-		}
-
-		if !interactive {
 			return err
 		}
+	}
+
+	kind, q, err := getKindQuery(ctx, gqlStr)
+	if err != nil {
+		if err == io.EOF {
+			return nil
+		}
+		core.Error(err)
+		return err
+	}
+
+	core.Debugf("kind = %v\n", kind)
+	core.Debugf("query = %q\n", q)
+
+	// Exporter
+	exporter := getExporter(ctx, format, style, kind, writer)
+
+	// Output entities
+	if err = outputEntities(ctx, pageSize, kind, q, exporter); err != nil {
+		core.Error(err)
+		return err
+	}
+	return nil
+
+}
+
+func readQuery() (string, error) {
+	info, err := os.Stdin.Stat()
+	if err != nil {
+		return "", err
+	}
+
+	if (info.Mode() & os.ModeCharDevice) == os.ModeCharDevice {
+		fmt.Print("gql> ")
+		return bufio.NewReader(os.Stdin).ReadString('\n')
+
+	} else {
+		return "", errors.New("Pipe not supported")
 	}
 }
 
 func getKindQuery(ctx core.Context, gqlStr string) (string, *datastore.Query, error) {
 
-	prompt := gqlStr == ""
-	for {
-		var err error
-		if prompt {
-			if gqlStr, err = readInput(); err != nil {
-				return "", nil, err
-			}
-		}
-
-		// Parse GQL
-		selectExpr, err := parseGQL(gqlStr)
-		if err != nil {
-			if prompt {
-				core.Error(err)
-				continue
-			} else {
-				return "", nil, err
-			}
-		}
-
-		// Convert to datastore's query
-		kind, q, err := convertToDatastoreQuery(ctx.Namespace, selectExpr)
-		if err != nil {
-			if prompt {
-				core.Error(err)
-				continue
-			} else {
-				return "", nil, err
-			}
-		}
-
-		return kind, q, nil
+	// Parse GQL
+	selectExpr, err := parseGQL(gqlStr)
+	if err != nil {
+		return "", nil, err
 	}
-}
 
-func readInput() (string, error) {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("gql> ")
-	return reader.ReadString('\n')
+	// Convert to datastore's query
+	kind, q, err := convertToDatastoreQuery(ctx.Namespace, selectExpr)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return kind, q, nil
 }
 
 func parseGQL(gqlStr string) (*gql.SelectExpr, error) {
@@ -244,29 +253,6 @@ func openFile(fn string) (*os.File, error) {
 	return fp, nil
 }
 
-func readQueryOutput(ctx core.Context, gqlStr, format string, style core.TypeStyle, writer io.Writer, pageSize int) error {
-
-	kind, q, err := getKindQuery(ctx, gqlStr)
-	if err != nil {
-		if err == io.EOF {
-			return nil
-		}
-		return err
-	}
-
-	core.Debugf("kind = %v\n", kind)
-	core.Debugf("query = %q\n", q)
-
-	// Exporter
-	exporter := getExporter(ctx, format, style, kind, writer)
-
-	// Output entities
-	if err = outputEntities(ctx, pageSize, kind, q, exporter); err != nil {
-		return err
-	}
-	return nil
-}
-
 func getExporter(ctx core.Context, format string, style core.TypeStyle, kind string, writer io.Writer) core.Exporter {
 
 	// Exporter
@@ -315,8 +301,8 @@ func outputEntities(ctx core.Context, pageSize int, kind string, q *datastore.Qu
 			if err = exporter.DumpEntities(keys, entities); err != nil {
 				return err
 			}
-			fmt.Printf("%d entities ware successfully outputed. (No.%d - No.%d)\n", to-from+1, from, to)
-			from = to + 1
+			core.Infof("%d entities ware successfully outputed. (No.%d - No.%d)\n", to-from, from, to-1)
+			from = to
 
 			keys = make([]*datastore.Key, 0)
 			entities = make([]datastore.PropertyList, 0)
@@ -340,7 +326,7 @@ func outputEntities(ctx core.Context, pageSize int, kind string, q *datastore.Qu
 		if err := exporter.DumpEntities(keys, entities); err != nil {
 			return err
 		}
-		fmt.Printf("%d entities ware successfully outputed. (No.%d - %d)\n", to-from+1, from, to)
+		core.Infof("%d entities ware successfully outputed. (No.%d - No.%d)\n", to-from, from, to-1)
 	}
 
 	return nil

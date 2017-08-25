@@ -1,8 +1,8 @@
-hash: 1ffe4604ebffef9064ddd1603ed3ab42b0c20e45df2683d8d0f30f3526e336e4
-updated: 2017-03-25T13:13:59.257446763+09:00
+hash: 0cf21e9dbd4819b71f5a5ade9740cb35f749abb0460f12e52ca922b4586f8802
+updated: 2017-08-25T11:58:34.15367357+09:00
 imports:
 - name: cloud.google.com/go
-  version: 2e6a95edb1071d750f6d7db777bf66cd2997af6c
+  version: 0f0b8420cb699ac4ce059c63bac263f4301fe95b
   subpackages:
   - compute/metadata
   - datastore
@@ -11,17 +11,20 @@ imports:
   - internal/fields
   - internal/version
 - name: github.com/fatih/color
-  version: 9131ab34cf20d2f6d83fdc67168a5430d1c7dc23
+  version: 570b54cabe6b8eb0bc2dfce68d964677d63b5260
 - name: github.com/golang/protobuf
-  version: 69b215d01a5606c843240eab4937eab3acee6530
+  version: ab9f9a6dab164b7d1246e0e688b0ab7b94d8553e
   subpackages:
   - proto
   - protoc-gen-go/descriptor
+  - ptypes
+  - ptypes/any
+  - ptypes/duration
   - ptypes/struct
   - ptypes/timestamp
   - ptypes/wrappers
 - name: github.com/googleapis/gax-go
-  version: da06d194a00e19ce00d9011a13931c3f6f6887c7
+  version: 2cadd475a3e966ec9b77a21afc530dbacec6d613
 - name: github.com/mattn/go-colorable
   version: 5411d3eea5978e6cdc258b30de592b60df6aba96
   repo: https://github.com/mattn/go-colorable
@@ -33,9 +36,9 @@ imports:
   subpackages:
   - assert
 - name: github.com/urfave/cli
-  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
+  version: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
 - name: golang.org/x/net
-  version: 6b27048ae5e6ad1ef927e72e437531493de612fe
+  version: 57efc9c3d9f91fb3277f8da1cff370539c4d3dc5
   subpackages:
   - context
   - context/ctxhttp
@@ -46,7 +49,7 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/oauth2
-  version: b9780ec78894ab900c062d58ee3076cd9b2a4501
+  version: 9a379c6b3e95a790ffc43293c2a78dee0d7b6e20
   subpackages:
   - google
   - internal
@@ -57,16 +60,22 @@ imports:
   repo: https://go.googlesource.com/sys
   subpackages:
   - unix
-- name: google.golang.org/api
-  version: bc20c61134e1d25265dd60049f5735381e79b631
+- name: golang.org/x/text
+  version: cc24f0397b10b6321b1a1322b6bd592984fdabf2
   subpackages:
-  - googleapi/transport
+  - secure/bidirule
+  - transform
+  - unicode/bidi
+  - unicode/norm
+- name: google.golang.org/api
+  version: dd6bdadc5852eae2d133075a3690d6ad744add48
+  subpackages:
   - internal
   - iterator
   - option
-  - transport
+  - transport/grpc
 - name: google.golang.org/appengine
-  version: 3a452f9e00122ead39586d68ffdb9c6e1326af3c
+  version: d9a072cfa7b9736e44311ef77b3e09d804bfa599
   subpackages:
   - internal
   - internal/app_identity
@@ -80,27 +89,32 @@ imports:
   - socket
   - urlfetch
 - name: google.golang.org/genproto
-  version: dee11a626cb8e7ff045ac9413dcd8a92e72f5863
+  version: ee236bd376b077c7a89f260c026c4735b195e459
   subpackages:
   - googleapis/api/annotations
   - googleapis/datastore/v1
+  - googleapis/rpc/status
   - googleapis/type/latlng
 - name: google.golang.org/grpc
-  version: 20633fa172ac711ac6a77fd573ed13f23ec56dcb
+  version: 7db1564ba1229bc42919bb1f6d9c4186f3aa8678
   subpackages:
   - codes
+  - connectivity
   - credentials
   - credentials/oauth
+  - grpclb/messages_only/grpc_lb_v1
   - grpclog
   - internal
+  - keepalive
   - metadata
   - naming
   - peer
   - stats
+  - status
   - tap
   - transport
 - name: gopkg.in/yaml.v2
-  version: a3f3340b5840cee44f372bddb5880fcbc419b46a
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9

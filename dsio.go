@@ -11,6 +11,8 @@ import (
 )
 
 const (
+	version = "0.2.0"
+
 	// the number of entities to output at once
 	defaultPageSize = 50
 
@@ -21,29 +23,29 @@ const (
 var (
 	FlagServiceAccoutFile = cli.StringFlag{
 		Name:   "key-file",
-		Usage:  "JSON `KEYFILE` of GCP service account",
+		Usage:  "name of GCP service account file.",
 		EnvVar: "DSIO_KEY_FILE",
 	}
 
 	FlagProjectID = cli.StringFlag{
 		Name:   "project-id",
-		Usage:  "GCP `PROJECT_ID`",
+		Usage:  "Project ID of GCP.",
 		EnvVar: "DSIO_PROJECT_ID",
 	}
 
 	FlagVerbose = cli.BoolFlag{
 		Name:  "verbose, v",
-		Usage: "Make the operation more talkative",
+		Usage: "Make the operation more talkative.",
 	}
 
 	FlagNoColor = cli.BoolFlag{
 		Name:  "no-color",
-		Usage: "Disable color output",
+		Usage: "Disable color output.",
 	}
 
 	FlagNamespace = cli.StringFlag{
 		Name:  "namespace, n",
-		Usage: "`NAMESPACE` of entities",
+		Usage: "namespace of entities.",
 	}
 )
 
@@ -57,30 +59,92 @@ func main() {
 
 	app.Name = "dsio"
 	app.Usage = "A command line tool for Google Cloud Datastore."
-	app.Version = "0.1.0"
+	app.Version = version
 
 	app.Commands = []cli.Command{
 		{
+			Name:      "upsert",
+			Usage:     "Bulk-upsert entities into Datastore.",
+			ArgsUsage: "filename",
+			Flags: []cli.Flag{
+				FlagNamespace,
+				cli.StringFlag{
+					Name:  "kind, k",
+					Usage: "Name of destination kind.",
+				},
+				cli.StringFlag{
+					Name:  "format, f",
+					Value: "yaml",
+					Usage: "Format of input file. <yaml|csv|tcv>.",
+				},
+				cli.BoolFlag{
+					Name:  "dry-run",
+					Usage: "Skip Datastore operations.",
+				},
+				cli.IntFlag{
+					Name:  "batch-size",
+					Value: 500,
+					Usage: "The number of entities per one multi upsert operation. batch-size should be smaller than 500.",
+				},
+				FlagServiceAccoutFile,
+				FlagProjectID,
+				FlagVerbose,
+				FlagNoColor,
+			},
+			Action: func(c *cli.Context) error {
+				args := c.Args()
+				if l := len(args); l == 0 {
+					core.Error("Filename is not specified")
+					return nil
+
+				} else if l > 1 {
+					core.Error("Too many args")
+					return nil
+				}
+				filename := args[0]
+
+				var format = c.String("format")
+				switch format {
+				case core.FormatCSV, core.FormatTSV, core.FormatYAML:
+					// ok
+				case "":
+					format = core.FormatYAML
+				default:
+					core.Errorf("Format should be yaml, csv or tsv")
+					return nil
+				}
+
+				ctx := core.SetContext(c)
+				ctx.PrintContext()
+				action.Upsert(ctx, filename, c.String("kind"), format, c.Int("batch-size"))
+
+				return nil
+			},
+		},
+		{
 			Name:      "query",
-			Usage:     "Query entities by GQL from Datastore",
-			ArgsUsage: `"SELECT * FROM ..."`,
+			Usage:     "Execute a query.",
+			ArgsUsage: `"[<gql_query>]"`,
 			Flags: []cli.Flag{
 				FlagNamespace,
 				cli.StringFlag{
 					Name:  "output, o",
-					Usage: "Write entities to `FILE`",
+					Usage: "Output filename. Entities are outputed into this file.",
 				},
 				cli.StringFlag{
 					Name:  "format, f",
-					Usage: "Query entities as `FORMAT` (yaml, csv, tcv)",
+					Value: "yaml",
+					Usage: "Format of output. <yaml|csv|tcv>.",
 				},
 				cli.StringFlag{
 					Name:  "style, s",
-					Usage: "Propertie's types are specified by `TYPE` style (scheme, direct, auto)",
+					Value: "scheme",
+					Usage: "Style of output. <scheme|direct|auto>.",
 				},
 				cli.IntFlag{
 					Name:  "page-size",
-					Usage: "The `NUMBER` of entities to output at once",
+					Value: 50,
+					Usage: "Number of entities to output at once.",
 				},
 				FlagServiceAccoutFile,
 				FlagProjectID,
@@ -97,7 +161,7 @@ func main() {
 				case "":
 					format = core.FormatYAML
 				default:
-					core.Errorf("Format should be one of yaml, csv, tsv")
+					core.Errorf("Format should be yaml, csv or tsv")
 					return nil
 				}
 
@@ -118,42 +182,6 @@ func main() {
 				ctx := core.SetContext(c)
 				ctx.PrintContext()
 				action.Query(ctx, query, format, style, c.String("output"), pageSize)
-				return nil
-			},
-		},
-		{
-			Name:  "upsert",
-			Usage: "Bulk upsert entities to Datastore",
-			Flags: []cli.Flag{
-				FlagNamespace,
-				cli.StringFlag{
-					Name:  "input, i",
-					Usage: "Read entities from `FILE` (required)",
-				},
-				cli.BoolFlag{
-					Name:  "dry-run",
-					Usage: "Skip operations of datastore",
-				},
-				cli.IntFlag{
-					Name:  "batch-size",
-					Usage: "The number of entities per one multi upsert operation. batch-size should be smaller than 500",
-				},
-				FlagServiceAccoutFile,
-				FlagProjectID,
-				FlagVerbose,
-				FlagNoColor,
-			},
-			Action: func(c *cli.Context) error {
-
-				if c.String("input") != "" {
-					ctx := core.SetContext(c)
-					ctx.PrintContext()
-					action.UpsertFromYAML(ctx, c.String("input"), c.Int("batch-size"))
-
-				} else {
-					core.Error("Please set `--input` option")
-				}
-
 				return nil
 			},
 		},

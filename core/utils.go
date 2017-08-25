@@ -67,7 +67,7 @@ func ConfirmYesNo(msg string) (bool, error) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Print(msg + " (y/n):")
+		Conform(msg + " (y/n):")
 
 		answer, err := reader.ReadString('\n')
 		if err != nil {
@@ -90,7 +90,6 @@ func ConfirmYesNo(msg string) (bool, error) {
 func ConfirmYesNoWithDefault(msg string, defaultValue bool) (bool, error) {
 
 	reader := bufio.NewReader(os.Stdin)
-
 	for {
 		var confirmStr string
 		if defaultValue {
@@ -99,7 +98,7 @@ func ConfirmYesNoWithDefault(msg string, defaultValue bool) (bool, error) {
 			confirmStr = " (y/N): "
 		}
 
-		fmt.Print(msg + confirmStr)
+		Conform(msg + confirmStr)
 
 		answer, err := reader.ReadString('\n')
 		if err != nil {
