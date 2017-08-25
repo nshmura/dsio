@@ -7,45 +7,55 @@ import (
 	"io"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
 
 	"cloud.google.com/go/datastore"
 )
 
 type CSVExporter struct {
-	writer    io.Writer
-	separator rune
-	namespace string
-	kind      string
+	writer *csv.Writer
+	types  map[string]DatastoreType
 }
 
-func NewCSVExporter(writer io.Writer, separator rune, namespace, kind string) *CSVExporter {
-	return &CSVExporter{
-		writer:    writer,
-		separator: separator,
-		namespace: namespace,
-		kind:      kind,
+func NewCSVExporter(w io.Writer, separator rune) *CSVExporter {
+
+	writer := csv.NewWriter(w)
+	writer.Comma = separator
+
+	exp := &CSVExporter{
+		writer: writer,
 	}
+
+	return exp
 }
 
 func (exp *CSVExporter) DumpScheme(keys []*datastore.Key, properties []datastore.PropertyList) error {
+
+	propInfos := getPropInfos(properties)
+
+	headers := make([]string, 0, len(propInfos))
+	types := make([]string, 0, len(propInfos))
+
+	// append key
+	headers = append(headers, KeywordKey)
+	if len(keys) > 0 {
+		types = append(types, string(GetTypeOfKey(keys[0])))
+	}
+
+	for _, info := range propInfos {
+		headers = append(headers, info.Name)
+		types = append(types, string(info.Type))
+	}
+
+	exp.writer.Write(headers)
+	exp.writer.Write(types)
+	exp.writer.Flush()
 	return nil
 }
 
 func (exp *CSVExporter) DumpEntities(keys []*datastore.Key, properties []datastore.PropertyList) error {
 
-	writer := csv.NewWriter(exp.writer)
-	writer.Comma = exp.separator
-
 	propInfos := getPropInfos(properties)
-
-	headers := []string{KeywordKey}
-
-	for _, info := range propInfos {
-		headers = append(headers, info.Name)
-	}
-	writer.Write(headers)
 
 	for i, e := range properties {
 		props, err := e.Save()
@@ -59,11 +69,11 @@ func (exp *CSVExporter) DumpEntities(keys []*datastore.Key, properties []datasto
 				return err
 			}
 			values = append([]string{KeyToString(keys[i])}, values...)
-			writer.Write(values)
+			exp.writer.Write(values)
 		}
 	}
 
-	writer.Flush()
+	exp.writer.Flush()
 	return nil
 }
 
@@ -123,29 +133,20 @@ func (exp *CSVExporter) propertyToString(v interface{}, quote bool) (str string,
 		str = v.In(time.UTC).Format(time.RFC3339)
 
 	case datastore.GeoPoint:
-		str = fmt.Sprintf("[%v, %v]", v.Lat, v.Lng)
+		str = fmt.Sprintf("[%f, %f]", v.Lat, v.Lng)
 
 	case []byte:
 		str = base64.StdEncoding.EncodeToString(v)
 
 	case *datastore.Entity:
-		str = fmt.Sprintf("%v", v.Properties) // TODO
+		vals := make(map[string]interface{})
+		for _, p := range v.Properties {
+			vals[p.Name] = p.Value
+		}
+		str, err = EncodeJSON(vals)
 
 	case []interface{}:
-		vals := make([]string, 0)
-		for _, e := range v {
-			var s string
-			if quote {
-				s, err = exp.propertyToQuotedString(e)
-			} else {
-				s, err = exp.propertyToString(e, false)
-			}
-			if err != nil {
-				return "", err
-			}
-			vals = append(vals, s)
-		}
-		str = fmt.Sprintf("[%s]", strings.Join(vals, ","))
+		str, err = EncodeJSON(v)
 
 	case nil:
 		str = "null"
