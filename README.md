@@ -32,27 +32,28 @@ $ dsio upsert --key-file /path/to/service_account_file.json --project-id your-gc
 
 
 # Bulk upsert entities into Datastore
-To upsert entities from CSV file: <br>
+To upsert entities from CSV file (e.g. upsert into `Book` kind): 
 ```
-$ dsio upsert filename.csv -f csv -f Book
+$ dsio upsert filename.csv -f csv -k Book
 ```
 
 
-To upsert entities from YAML file: <br>
+To upsert entities from YAML file:
 ```
 $ dsio upsert filename.yaml -f yaml
 ```
 
 
-To specify namespace:
+To specify namespace (e.g. `production` namespace):
 ```
-$ dsio upsert simple.csv -f csv -n production
+$ dsio upsert simple.yaml -f yaml -n production
 ```
 
-see:
- - [Samples](./samples/)
- - [CSV format](https://github.com/nshmura/dsio/wiki/CSV-and-TSV-Format)
+
+### File format and Samples:
+ - [CSV and TSV format](https://github.com/nshmura/dsio/wiki/CSV-and-TSV-Format)
  - [YAML format](https://github.com/nshmura/dsio/wiki/YAML-Format)
+ - [CSV,TSV,YAML file samples](./samples/)
 
 
 # Query entities by GQL from Datastore
@@ -61,21 +62,20 @@ To query entities by [GQL](https://cloud.google.com/datastore/docs/reference/gql
 ```
 $ dsio query 'SELECT * FROM Book LIMIT 2'
 ```
-Entities are outputed by [YAML format](https://github.com/nshmura/dsio/wiki/YAML-Format).
 
-
-To specify namespace:
-```
-$ dsio query 'SELECT * FROM Book LIMIT 2' -n production 
-```
-
-To query with CSV format:
+Output with CSV format:
 ```
 $ dsio query 'SELECT * FROM Book LIMIT 2' -f csv
 ```
 
+To specify namespace (e.g. `production` namespace):
+```
+$ dsio query 'SELECT * FROM Book LIMIT 2' -n production 
+```
+
 *In CSV (and TSV) format, all value is converted to string and `noindex` value is disappeared.
 So entities exported in CSV (and TSV) format are **different from original entities in Datastore.***
+
 
 # Options
 
