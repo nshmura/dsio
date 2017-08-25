@@ -6,6 +6,8 @@ const (
 	FormatYAML = "yaml"
 )
 
+const CsvNoIndexKeyword = ":noindex"
+
 type TypeStyle string
 
 const (

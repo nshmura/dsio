@@ -6,6 +6,14 @@ import (
 	"github.com/fatih/color"
 )
 
+func Conform(message interface{}) {
+	fmt.Printf("%v %v", color.CyanString("[CONFIRM]"), message)
+}
+
+func Conformf(format string, value ...interface{}) {
+	fmt.Printf("%v ", color.CyanString("[CONFIRM]"))
+	fmt.Printf(format, value...)
+}
 func Info(message interface{}) {
 	fmt.Printf("%v %v\n", color.GreenString("[INFO]"), message)
 }

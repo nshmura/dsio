@@ -14,7 +14,7 @@ const (
 )
 
 // Upsert entities form yaml file to datastore
-func UpsertFromYAML(ctx core.Context, filename string, batchSize int) error {
+func Upsert(ctx core.Context, filename, kind, format string, batchSize int) error {
 
 	if !ctx.Verbose {
 		defer func() {
@@ -31,15 +31,14 @@ func UpsertFromYAML(ctx core.Context, filename string, batchSize int) error {
 		return core.Errorf("batch-size should be smaller than %d\n", maxBatchSize)
 	}
 
-	parser := core.NewYAMLParser()
-
-	// Read from file
-	if err := parser.ReadFile(filename); err != nil {
+	// Parser
+	parser, err := getParser(kind, format)
+	if err != nil {
 		return core.Error(err)
 	}
 
-	// Validate
-	if err := parser.Validate(ctx); err != nil {
+	// Read from file
+	if err := parser.ReadFile(filename); err != nil {
 		return core.Error(err)
 	}
 
@@ -96,6 +95,17 @@ func UpsertFromYAML(ctx core.Context, filename string, batchSize int) error {
 		}
 	}
 	return nil
+}
+
+func getParser(kind, format string) (core.FileParser, error) {
+	switch format {
+	case core.FormatCSV:
+		return core.NewCSVParser(kind, ',')
+	case core.FormatTSV:
+		return core.NewCSVParser(kind, '\t')
+	default:
+		return core.NewYAMLParser(kind)
+	}
 }
 
 func getKeysValues(ctx core.Context, dsEntities *[]datastore.Entity, from, to int) (keys []*datastore.Key, values []interface{}) {

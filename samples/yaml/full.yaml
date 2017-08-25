@@ -2,8 +2,6 @@
 scheme:
   namespace: production
   kind: Book
-  time-format: "2006-01-02"
-  time-locale: America/New_York
   properties:
     Title: string
     Sort: int
