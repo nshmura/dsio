@@ -30,6 +30,14 @@ func NewCSVExporter(writer io.Writer, separator rune, namespace, kind string) *C
 }
 
 func (exp *CSVExporter) DumpScheme(keys []*datastore.Key, properties []datastore.PropertyList) error {
+	propInfos := getPropInfos(properties)
+
+	scheme, err := exp.getScheme(propInfos)
+	if err != nil {
+		return err
+	}
+	exp.outputYaml("scheme", scheme)
+
 	return nil
 }
 
