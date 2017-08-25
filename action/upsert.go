@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"math"
 
+	"path/filepath"
+	"strings"
+
 	"cloud.google.com/go/datastore"
 	"github.com/nshmura/dsio/core"
 )
 
 const (
-	maxBatchSize = 500 // The number of entities per one multi upsert operation
+	// The number of entities per one multi upsert operation
+	maxBatchSize = 500
 )
 
 // Upsert entities form yaml file to datastore
@@ -19,15 +23,30 @@ func Upsert(ctx core.Context, filename, kind, format string, batchSize int) erro
 	if !ctx.Verbose {
 		defer func() {
 			if r := recover(); r != nil {
-				core.Error(r)
+				fmt.Printf("%v\n\n", r)
 			}
 		}()
 	}
 
+	// Format
+	switch format {
+	case core.FormatCSV, core.FormatTSV, core.FormatYAML:
+		// ok
+	case "":
+		var err error
+		if format, err = detectFileFormat(filename); err != nil {
+			core.Error("can not detect file format.")
+			return nil
+		}
+	default:
+		core.Errorf("Format should be yaml, csv or tsv. :%s", format)
+		return nil
+	}
+
+	// BatchSize
 	if batchSize == 0 {
 		batchSize = maxBatchSize
-	}
-	if batchSize > maxBatchSize {
+	} else if batchSize > maxBatchSize {
 		return core.Errorf("batch-size should be smaller than %d\n", maxBatchSize)
 	}
 
@@ -95,6 +114,21 @@ func Upsert(ctx core.Context, filename, kind, format string, batchSize int) erro
 		}
 	}
 	return nil
+}
+
+func detectFileFormat(filename string) (string, error) {
+	ext := strings.ToLower(filepath.Ext(filename))
+	if ext == "" || strings.HasSuffix(ext, ".") {
+		return "", nil
+	}
+	ext = ext[1:]
+
+	switch ext {
+	case core.FormatCSV, core.FormatTSV, core.FormatYAML:
+		return ext, nil
+	default:
+		return "", fmt.Errorf("unknown file extension: %s", ext)
+	}
 }
 
 func getParser(kind, format string) (core.FileParser, error) {

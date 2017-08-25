@@ -9,28 +9,32 @@ import (
 	"os"
 
 	"cloud.google.com/go/datastore"
+	"encoding/json"
 )
 
 func ToString(value interface{}) string {
-	return fmt.Sprintf("%v", value)
+	switch t := value.(type) {
+	case string:
+		return t
+	default:
+		return fmt.Sprint(value)
+	}
 }
 
 func ToFloat64(val interface{}) (float64, error) {
 	switch v := val.(type) {
 	case float64:
 		return v, nil
-	case float32:
-		return float64(v), nil
-	case int:
-		return float64(v), nil
-	case int32:
-		return float64(v), nil
-	case int64:
-		return float64(v), nil
+	case float32, int, int32, int64:
+		if v, ok := v.(float64); ok {
+			return v, nil
+		} else {
+			return 0, fmt.Errorf("can not convert %v to float64", val)
+		}
 	case string:
 		return strconv.ParseFloat(v, 64)
 	}
-	return 0, fmt.Errorf("can't convert %v to float64", val)
+	return 0, fmt.Errorf("can not convert %v to float64", val)
 }
 
 func KeyToString(k *datastore.Key) string {
@@ -119,4 +123,8 @@ func ConfirmYesNoWithDefault(msg string, defaultValue bool) (bool, error) {
 			// confirm once more
 		}
 	}
+}
+
+func DecodeJSON(str string, value interface{}) error {
+	return json.Unmarshal([]byte(str), value)
 }

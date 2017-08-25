@@ -1,4 +1,5 @@
-__key__	Title	Sort	Price	Public	CreatedAt	UpdatedAt	Image	Condition
-string	string	int	float	bool	datetime	datetime:noindex	blob	null
-1	Brave New World	100	18.38	TRUE	1932-01-01	__current__	iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=	null
-2	The Old Man and the Sea	200	15.27	FALSE	1952-01-01T15:00:00+09:00	__current__	iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=	null
+__key__	Title	Sort	Price	Public	Image	Condition	CreatedAt	UpdatedAt	Location	Types	Authoer	Info
+string	string	int	float	bool	blob	null	datetime	datetime:noindex	geo	array	key	embed
+1	Brave New World	100	18.38	TRUE	iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=	null	1932-01-01	__current__	"[51.507222, -0.1275]"	"[""Hardcover"", ""PaperBack""]"	"[""class"", ""HumanKind"", ""author"", ""Aldous Huxley""]"	"{""Language"": ""English"", ""Pages"": 128,  ""Weight"": 2.9, ""New"": true, ""ReviewedAt"": ""2015-02-24T18:19:39Z""}"
+2	The Old Man and the Sea	200	15.27	FALSE	iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=	null	1952-01-01T15:00:00+09:00	__current__	"[27.114287, -90.167409]"	"[""Hardcover"", ""PaperBack""]"	"[""class"", ""HumanKind"", ""author"", ""Ernest Hemingway""]"	"{""Language"": ""English"", ""Pages"": 128,  ""Weight"": 2.9, ""New"": true, ""ReviewedAt"": ""2015-02-24T18:19:39Z""}"
+

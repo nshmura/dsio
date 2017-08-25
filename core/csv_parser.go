@@ -96,7 +96,6 @@ func (p *CSVParser) parsePropertyType(record []string) {
 }
 
 func (p *CSVParser) parseEntity(record []string) {
-
 	entity := Entity{}
 	for i, value := range record {
 		entity[p.names[i]] = value

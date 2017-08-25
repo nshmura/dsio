@@ -74,7 +74,6 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:  "format, f",
-					Value: "yaml",
 					Usage: "Format of input file. <yaml|csv|tcv>.",
 				},
 				cli.BoolFlag{
@@ -103,20 +102,10 @@ func main() {
 				}
 				filename := args[0]
 
-				var format = c.String("format")
-				switch format {
-				case core.FormatCSV, core.FormatTSV, core.FormatYAML:
-					// ok
-				case "":
-					format = core.FormatYAML
-				default:
-					core.Errorf("Format should be yaml, csv or tsv")
-					return nil
-				}
-
 				ctx := core.SetContext(c)
 				ctx.PrintContext()
-				action.Upsert(ctx, filename, c.String("kind"), format, c.Int("batch-size"))
+
+				action.Upsert(ctx, filename, c.String("kind"), c.String("format"), c.Int("batch-size"))
 
 				return nil
 			},
