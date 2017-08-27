@@ -15,6 +15,9 @@ import (
 type CSVExporter struct {
 	writer *csv.Writer
 	types  map[string]DatastoreType
+
+	schemePropInfos []PropertyInfo
+	propInfos       []PropertyInfo
 }
 
 func NewCSVExporter(w io.Writer, separator rune) *CSVExporter {
@@ -31,10 +34,10 @@ func NewCSVExporter(w io.Writer, separator rune) *CSVExporter {
 
 func (exp *CSVExporter) DumpScheme(keys []*datastore.Key, properties []datastore.PropertyList) error {
 
-	propInfos := getPropInfos(properties)
+	exp.schemePropInfos = getPropInfos(properties)
 
-	headers := make([]string, 0, len(propInfos))
-	types := make([]string, 0, len(propInfos))
+	headers := make([]string, 0, len(exp.schemePropInfos))
+	types := make([]string, 0, len(exp.schemePropInfos))
 
 	// append key
 	headers = append(headers, KeywordKey)
@@ -42,7 +45,7 @@ func (exp *CSVExporter) DumpScheme(keys []*datastore.Key, properties []datastore
 		types = append(types, string(GetTypeOfKey(keys[0])))
 	}
 
-	for _, info := range propInfos {
+	for _, info := range exp.schemePropInfos {
 		headers = append(headers, info.Name)
 		types = append(types, string(info.Type))
 	}
@@ -55,7 +58,7 @@ func (exp *CSVExporter) DumpScheme(keys []*datastore.Key, properties []datastore
 
 func (exp *CSVExporter) DumpEntities(keys []*datastore.Key, properties []datastore.PropertyList) error {
 
-	propInfos := getPropInfos(properties)
+	exp.propInfos = exp.appendPropInfos(getPropInfos(properties))
 
 	for i, e := range properties {
 		props, err := e.Save()
@@ -64,7 +67,7 @@ func (exp *CSVExporter) DumpEntities(keys []*datastore.Key, properties []datasto
 			return err
 
 		} else {
-			values, err := exp.getValueList(propInfos, props)
+			values, err := exp.getValueList(exp.propInfos, props)
 			if err != nil {
 				return err
 			}
@@ -75,6 +78,31 @@ func (exp *CSVExporter) DumpEntities(keys []*datastore.Key, properties []datasto
 
 	exp.writer.Flush()
 	return nil
+}
+
+func (exp *CSVExporter) appendPropInfos(propInfos []PropertyInfo) []PropertyInfo {
+
+	var newInfos []PropertyInfo
+	for _, p := range propInfos {
+		if !exp.hasSameProperty(exp.propInfos, p) {
+			newInfos = append(newInfos, p)
+		}
+	}
+
+	for _, p := range newInfos {
+		exp.propInfos = append(exp.propInfos, p)
+	}
+
+	return exp.propInfos
+}
+
+func (exp *CSVExporter) hasSameProperty(propInfos []PropertyInfo, p PropertyInfo) bool {
+	for _, p2 := range propInfos {
+		if p2.Name == p.Name {
+			return true
+		}
+	}
+	return false
 }
 
 func (exp *CSVExporter) getValueList(propInfos []PropertyInfo, props []datastore.Property) ([]string, error) {

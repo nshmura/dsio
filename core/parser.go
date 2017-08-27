@@ -104,7 +104,7 @@ func (p *Parser) ParseEntity(entity Entity) (dsEntity datastore.Entity, err erro
 	// Default Values
 	for name, val := range d.Default {
 		if IsKeyValueName(name) {
-			err = fmt.Errorf("%v cannot be as default value", name)
+			err = fmt.Errorf("%v can not be as default value", name)
 			return
 		}
 		if _, ok := entity[name]; !ok {
@@ -322,7 +322,10 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 		}
 
 		v := ToString(val)
-		if IsCurrentDatetime(v) {
+		if v == "" {
+			// break;
+
+		} else if IsCurrentDatetime(v) {
 			value = time.Now().In(loc)
 
 		} else if d.Scheme.TimeFormat == "" {
@@ -411,7 +414,7 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 
 		case string:
 			if t == "" {
-				value = ""
+				value = nil
 				break
 			}
 			var json map[string]interface{}

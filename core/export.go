@@ -27,14 +27,14 @@ func getPropInfos(entities []datastore.PropertyList) []PropertyInfo {
 	for _, e := range entities {
 		props, err := e.Save()
 		if err != nil {
-			panic(Panicf("can't get properties: %v", err))
+			panic(Panicf("can not get properties: %v", err))
 		}
 
 		for _, p := range props {
 			if _, ok := infoMap[p.Name]; !ok {
 				dsType, err := getDatastoreType(p.Value)
 				if err != nil {
-					panic(Panicf("can't get properties: %v", err))
+					panic(Panicf("can not get properties: %v", err))
 				}
 
 				infoMap[p.Name] = PropertyInfo{
@@ -55,6 +55,7 @@ func getPropInfos(entities []datastore.PropertyList) []PropertyInfo {
 	sort.Slice(propInfos, func(i, j int) bool {
 		return propInfos[i].Name < propInfos[j].Name
 	})
+
 	return propInfos
 }
 
@@ -103,6 +104,6 @@ func getDatastoreType(v interface{}) (DatastoreType, error) {
 		return TypeNull, nil
 
 	default:
-		return "", fmt.Errorf("can't convert %v to datastore type", reflect.TypeOf(v).Kind())
+		return "", fmt.Errorf("can not convert %v to datastore type", reflect.TypeOf(v).Kind())
 	}
 }

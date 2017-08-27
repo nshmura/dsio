@@ -72,8 +72,8 @@ To specify namespace (e.g. `production` namespace):
 $ dsio query 'SELECT * FROM Book LIMIT 2' -n production 
 ```
 
-**CAUTION:** In CSV and TSV format, `noindex` value will be removed.
-
+**CAUTION:** In CSV (and TSV) format, information about types may be dropped in some case, and `noindex` value is removed.
+So in some case, there is no way to restore exactly same entities in Datastore from the generated CSV.
 
 # Options
 
