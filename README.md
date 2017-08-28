@@ -5,8 +5,15 @@
 **This tool is under development. Please use in your own risk.**
 
 ### Features
-- Bulk upsert entities into Datastore
-- Query entities by GQL from Datastore
+- Bulk upsert entities in CSV and YAML file.
+- Query by GQL from command line.
+
+### Motivation
+
+I want to version-control master data in Datastore, and want to automatically reflect the changes to Datastore using CI service.
+like below:
+
+![ci](./docs/ci.png)
 
 
 # Getting Started
