@@ -10,7 +10,7 @@
 
 ### Motivation
 
-I want to version-control master data in Datastore, and want to automatically reflect the changes to Datastore using CI service.
+I have been developing web application which uses Datastore to store application's master data. I want to version-control master data in Datastore, and want to automatically reflect the changes to Datastore using CI service.<br>
 like below:
 
 ![ci](./docs/ci.png)
