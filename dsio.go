@@ -11,9 +11,11 @@ import (
 	"github.com/urfave/cli"
 )
 
-const (
-	version = "0.4.0"
+var (
+	Version = "No Version Provided"
+)
 
+const (
 	// the number of entities to output at once
 	defaultPageSize = 50
 
@@ -60,7 +62,7 @@ func main() {
 
 	app.Name = "dsio"
 	app.Usage = "A command line tool for Google Cloud Datastore."
-	app.Version = version
+	app.Version = Version
 
 	app.Commands = []cli.Command{
 		{
@@ -189,5 +191,4 @@ func getTypeStyle(style string) (core.TypeStyle, error) {
 	default:
 		return core.TypeStyle(""), errors.New("Format should be one of scheme, direct, auto")
 	}
-
 }
