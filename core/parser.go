@@ -86,16 +86,20 @@ func (p *Parser) ParseEntity(entity Entity) (dsEntity datastore.Entity, err erro
 	// Values
 	for name, val := range entity {
 		if IsKeyValueName(name) {
-			key = p.parseKeyList(val)
+			if key, err = p.parseKeyList(val); err != nil {
+				return
+			}
 
 		} else {
-			if prop, e := p.parseProperty(name, val); e != nil {
-				err = e
+			var prop *datastore.Property
+			prop, err = p.parseProperty(name, val)
+			if err != nil {
 				return
-			} else {
-				props = append(props, *prop)
-				if key == nil && name == p.kindData.Scheme.Key {
-					key = p.parseKeyList(prop.Value)
+			}
+			props = append(props, *prop)
+			if key == nil && name == p.kindData.Scheme.Key {
+				if key, err = p.parseKeyList(prop.Value); err != nil {
+					return
 				}
 			}
 		}
@@ -127,14 +131,14 @@ func (p *Parser) ParseEntity(entity Entity) (dsEntity datastore.Entity, err erro
 	}, nil
 }
 
-func (p *Parser) parseKeyList(val interface{}) *datastore.Key {
+func (p *Parser) parseKeyList(val interface{}) (key *datastore.Key, err error) {
 	d := p.kindData
 
 	if s, ok := val.(string); ok {
 		if strings.HasPrefix(s, "[") && strings.HasSuffix(s, "]") {
 			var arr []interface{}
-			if err := DecodeJSON(s, &arr); err != nil {
-				return nil
+			if err = DecodeJSON(s, &arr); err != nil {
+				return
 			} else {
 				val = arr
 			}
@@ -146,35 +150,37 @@ func (p *Parser) parseKeyList(val interface{}) *datastore.Key {
 		return p.parseKey(d.Scheme.Kind, val, nil)
 	}
 
-	var key *datastore.Key
 	var kind string
 	for i, v := range keys {
 		if i%2 == 0 {
 			kind = ToString(v)
 		} else {
-			key = p.parseKey(kind, v, key)
+			key, err = p.parseKey(kind, v, key)
+			if err != nil {
+				return
+			}
 		}
 	}
 	if len(keys)%2 != 0 {
 		key = p.getDSIncompleteKey(kind, key)
 	}
-
-	return key
+	return
 }
 
-func (p *Parser) parseKey(kind string, val interface{}, parent *datastore.Key) *datastore.Key {
+func (p *Parser) parseKey(kind string, val interface{}, parent *datastore.Key) (key *datastore.Key, err error) {
 	switch v := val.(type) {
 	case string:
-		return p.getDSNamedKey(kind, v, parent)
+		key = p.getDSNamedKey(kind, v, parent)
 	case int:
-		return p.getDSIDKey(kind, int64(v), parent)
+		key = p.getDSIDKey(kind, int64(v), parent)
 	case int32:
-		return p.getDSIDKey(kind, int64(v), parent)
+		key = p.getDSIDKey(kind, int64(v), parent)
 	case int64:
-		return p.getDSIDKey(kind, v, parent)
+		key = p.getDSIDKey(kind, v, parent)
 	default:
-		panic(Panicf("key should be string or integer: %v", v))
+		err = fmt.Errorf("key should be string or integer: %v", v)
 	}
+	return
 }
 
 func (p *Parser) getDSIDKey(kind string, id int64, parent *datastore.Key) *datastore.Key {
@@ -372,7 +378,7 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 		value = nil
 
 	case TypeKey:
-		value = p.parseKeyList(val)
+		value, err = p.parseKeyList(val)
 
 	case TypeGeo:
 		if value, err = p.parseGeoPoint(val); err != nil {

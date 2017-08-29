@@ -36,17 +36,16 @@ func ToFloat64(val interface{}) (float64, error) {
 	return 0, fmt.Errorf("can not convert %v to float64", val)
 }
 
-func GetTypeOfKey(k *datastore.Key) DatastoreType {
+func GetTypeOfKey(k *datastore.Key) (t DatastoreType, err error) {
 	if k.Parent != nil {
-		return TypeArray
+		t = TypeArray
+	} else if k.Name != "" {
+		t = TypeString
+	} else if k.ID > 0 {
+		t = TypeInt
 	}
-	if k.Name != "" {
-		return TypeString
-	}
-	if k.ID > 0 {
-		return TypeInt
-	}
-	panic(Panicf("unsupported key:%v", k))
+	err = fmt.Errorf("unsupported key:%v", k)
+	return
 }
 
 func KeyToString(k *datastore.Key) string {

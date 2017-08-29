@@ -162,7 +162,7 @@ func main() {
 				style, err := getTypeStyle(c.String("style"))
 				if err != nil {
 					core.Error(err)
-					return nil
+					return err
 				}
 
 				pageSize := c.Int("page-size")
@@ -170,7 +170,9 @@ func main() {
 					pageSize = defaultPageSize
 
 				} else if pageSize > maxPageSize {
-					return core.Errorf("Too large page size:%v", pageSize)
+					err := fmt.Errorf("Too large page size:%v", pageSize)
+					core.Error(err)
+					return err
 				}
 
 				ctx := core.SetContext(c)

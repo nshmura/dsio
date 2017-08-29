@@ -36,16 +36,16 @@ func Debugf(format string, value ...interface{}) {
 	}
 }
 
-func Error(message interface{}) error {
+func Error(message interface{}) {
 	color.Red("[ERROR] %v", message)
 	fmt.Println("")
-	return fmt.Errorf("%v", message)
+	fmt.Errorf("%v", message)
 }
 
-func Errorf(format string, value ...interface{}) error {
+func Errorf(format string, value ...interface{}) {
 	color.Red("[ERROR] "+format, value...)
 	fmt.Println("")
-	return fmt.Errorf(format, value...)
+	fmt.Errorf(format, value...)
 }
 
 func Panicf(format string, value ...interface{}) string {

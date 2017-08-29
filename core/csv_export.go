@@ -45,7 +45,11 @@ func (exp *CSVExporter) DumpScheme(keys []*datastore.Key, properties []datastore
 	// append key
 	headers = append(headers, KeywordKey)
 	if len(keys) > 0 {
-		types = append(types, string(GetTypeOfKey(keys[0])))
+		if t, err := GetTypeOfKey(keys[0]); err != nil {
+			return err
+		} else {
+			types = append(types, string(t))
+		}
 	}
 
 	for _, info := range exp.schemePropInfos {
