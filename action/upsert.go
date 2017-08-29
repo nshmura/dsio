@@ -2,6 +2,7 @@ package action
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"path/filepath"
@@ -19,14 +20,6 @@ const (
 // Upsert entities form yaml file to datastore
 func Upsert(ctx core.Context, filename, kind, format string, batchSize int) error {
 
-	if !ctx.Verbose {
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Printf("%v\n\n", r)
-			}
-		}()
-	}
-
 	// Format
 	switch format {
 	case core.FormatCSV, core.FormatTSV, core.FormatYAML:
@@ -34,41 +27,43 @@ func Upsert(ctx core.Context, filename, kind, format string, batchSize int) erro
 	case "":
 		var err error
 		if format, err = detectFileFormat(filename); err != nil {
-			core.Error("can not detect file format.")
-			return nil
+			return errors.New("can not detect file format.")
 		}
 	default:
-		core.Errorf("Format should be yaml, csv or tsv. :%s", format)
-		return nil
+
+		return fmt.Errorf("Format should be yaml, csv or tsv. :%s", format)
 	}
 
 	// BatchSize
 	if batchSize == 0 {
 		batchSize = MaxBatchSize
 	} else if batchSize > MaxBatchSize {
-		return core.Errorf("batch-size should be smaller than %d\n", MaxBatchSize)
+		return fmt.Errorf("batch-size should be smaller than %d\n", MaxBatchSize)
 	}
 
 	// Parser
 	parser, err := getParser(kind, format)
 	if err != nil {
-		return core.Error(err)
+		return err
 	}
 
 	// Read from file
 	if err := parser.ReadFile(filename); err != nil {
-		return core.Error(err)
+		return err
 	}
 
 	// Parse
 	dsEntities, err := parser.Parse()
 	if err != nil {
-		return core.Error(err)
+		return err
 	}
 
 	// Upsert to datastore
 	if !ctx.DryRun {
-		client := core.CreateDatastoreClient(ctx)
+		client, err := core.CreateDatastoreClient(ctx)
+		if err != nil {
+			return err
+		}
 
 		allPage := int(math.Ceil(float64(len(*dsEntities)) / float64(batchSize)))
 		for page := 0; page < allPage; page++ {

@@ -27,7 +27,6 @@ func Query(ctx core.Context, gqlStr, format string, style core.TypeStyle, filena
 		}
 		defer fp.Close()
 		if err != nil {
-			core.Error(err)
 			return err
 		}
 		w := bufio.NewWriter(fp)
@@ -39,7 +38,6 @@ func Query(ctx core.Context, gqlStr, format string, style core.TypeStyle, filena
 		var err error
 		gqlStr, err = readQuery()
 		if err != nil {
-			core.Error(err)
 			return err
 		}
 	}
@@ -49,7 +47,6 @@ func Query(ctx core.Context, gqlStr, format string, style core.TypeStyle, filena
 		if err == io.EOF {
 			return nil
 		}
-		core.Error(err)
 		return err
 	}
 
@@ -61,7 +58,6 @@ func Query(ctx core.Context, gqlStr, format string, style core.TypeStyle, filena
 
 	// Output entities
 	if err = outputEntities(ctx, pageSize, kind, q, exporter); err != nil {
-		core.Error(err)
 		return err
 	}
 	return nil
@@ -269,7 +265,11 @@ func getExporter(ctx core.Context, format string, style core.TypeStyle, kind str
 func outputEntities(ctx core.Context, pageSize int, kind string, q *datastore.Query, exporter core.Exporter) error {
 
 	// Get Iterator
-	client := core.CreateDatastoreClient(ctx)
+	client, err := core.CreateDatastoreClient(ctx)
+	if err != nil {
+		return err
+	}
+
 	iter := client.Run(context.Background(), q)
 
 	first := true

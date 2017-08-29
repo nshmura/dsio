@@ -108,8 +108,11 @@ func main() {
 				ctx := core.SetContext(c)
 				ctx.PrintContext()
 
-				action.Upsert(ctx, filename, c.String("kind"), c.String("format"), c.Int("batch-size"))
-				return nil
+				err := action.Upsert(ctx, filename, c.String("kind"), c.String("format"), c.Int("batch-size"))
+				if err != nil {
+					core.Error(err)
+				}
+				return err
 			},
 		},
 		{
@@ -172,8 +175,12 @@ func main() {
 
 				ctx := core.SetContext(c)
 				ctx.PrintContext()
-				action.Query(ctx, query, format, style, c.String("output"), pageSize)
-				return nil
+
+				err = action.Query(ctx, query, format, style, c.String("output"), pageSize)
+				if err != nil {
+					core.Error(err)
+				}
+				return err
 			},
 		},
 	}
