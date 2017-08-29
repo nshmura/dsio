@@ -109,7 +109,6 @@ func main() {
 				ctx.PrintContext()
 
 				action.Upsert(ctx, filename, c.String("kind"), c.String("format"), c.Int("batch-size"))
-
 				return nil
 			},
 		},

@@ -34,7 +34,10 @@ func NewCSVExporter(w io.Writer, separator rune) *CSVExporter {
 
 func (exp *CSVExporter) DumpScheme(keys []*datastore.Key, properties []datastore.PropertyList) error {
 
-	exp.schemePropInfos = getPropInfos(properties)
+	var err error
+	if exp.schemePropInfos, err = getPropInfos(properties); err != nil {
+		return err
+	}
 
 	headers := make([]string, 0, len(exp.schemePropInfos))
 	types := make([]string, 0, len(exp.schemePropInfos))
@@ -58,7 +61,12 @@ func (exp *CSVExporter) DumpScheme(keys []*datastore.Key, properties []datastore
 
 func (exp *CSVExporter) DumpEntities(keys []*datastore.Key, properties []datastore.PropertyList) error {
 
-	exp.propInfos = exp.appendPropInfos(getPropInfos(properties))
+	propInfos, err := getPropInfos(properties)
+	if err != nil {
+		return err
+	}
+
+	exp.propInfos = exp.appendPropInfos(propInfos)
 
 	for i, e := range properties {
 		props, err := e.Save()
