@@ -7,19 +7,12 @@ import (
 	"google.golang.org/api/option"
 )
 
-func CreateDatastoreClient(ctx Context) *datastore.Client {
-
+func CreateDatastoreClient(ctx Context) (*datastore.Client, error) {
 	var opts []option.ClientOption
 	if ctx.ServiceAccountFile != "" {
 		opts = []option.ClientOption{
-			option.WithServiceAccountFile(ctx.ServiceAccountFile),
+			option.WithCredentialsFile(ctx.ServiceAccountFile),
 		}
 	}
-
-	client, err := datastore.NewClient(context.Background(), ctx.ProjectID, opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return client
+	return datastore.NewClient(context.Background(), ctx.ProjectID, opts...)
 }

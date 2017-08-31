@@ -20,21 +20,21 @@ type PropertyInfo struct {
 	Type     DatastoreType
 }
 
-func getPropInfos(entities []datastore.PropertyList) []PropertyInfo {
+func getPropInfos(entities []datastore.PropertyList) ([]PropertyInfo, error) {
 
 	infoMap := map[string]PropertyInfo{}
 
 	for _, e := range entities {
 		props, err := e.Save()
 		if err != nil {
-			panic(Panicf("can not get properties: %v", err))
+			return nil, fmt.Errorf("can not get properties: %v", err)
 		}
 
 		for _, p := range props {
 			if _, ok := infoMap[p.Name]; !ok {
 				dsType, err := getDatastoreType(p.Value)
 				if err != nil {
-					panic(Panicf("can not get properties: %v", err))
+					return nil, fmt.Errorf("can not get properties: %v", err)
 				}
 
 				infoMap[p.Name] = PropertyInfo{
@@ -56,7 +56,7 @@ func getPropInfos(entities []datastore.PropertyList) []PropertyInfo {
 		return propInfos[i].Name < propInfos[j].Name
 	})
 
-	return propInfos
+	return propInfos, nil
 }
 
 func getDSPropertyByName(name string, props []datastore.Property) *datastore.Property {

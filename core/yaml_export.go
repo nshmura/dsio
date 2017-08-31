@@ -27,7 +27,10 @@ func NewYAMLExport(writer io.Writer, style TypeStyle, namespace, kind string) *Y
 }
 
 func (exp *YAMLExport) DumpScheme(keys []*datastore.Key, properties []datastore.PropertyList) error {
-	propInfos := getPropInfos(properties)
+	propInfos, err := getPropInfos(properties)
+	if err != nil {
+		return err
+	}
 
 	scheme, err := exp.getScheme(propInfos)
 	if err != nil {
@@ -39,14 +42,16 @@ func (exp *YAMLExport) DumpScheme(keys []*datastore.Key, properties []datastore.
 }
 
 func (exp *YAMLExport) DumpEntities(keys []*datastore.Key, properties []datastore.PropertyList) error {
-	propInfos := getPropInfos(properties)
+	propInfos, err := getPropInfos(properties)
+	if err != nil {
+		return err
+	}
 
 	entities, err := exp.getEntities(keys, properties, propInfos)
 	if err != nil {
 		return err
 	}
 	exp.outputYaml("entities", entities)
-
 	return nil
 }
 
