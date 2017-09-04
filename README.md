@@ -82,6 +82,12 @@ $ dsio query 'SELECT * FROM Book LIMIT 2' -n production
 **CAUTION:** In CSV (and TSV) format, information about types may be dropped in some case, and `noindex` value is removed.
 So in some case, there is no way to restore exactly same entities in Datastore from the generated CSV.
 
+
+# Local Emulator
+
+To connecto to the Cloud Datastore emnulator, follow [this steps](https://cloud.google.com/datastore/docs/tools/datastore-emulator#setting_environment_variables
+).
+
 # Options
 
 ### dsio upsert
