@@ -22,8 +22,7 @@ like below:
 go get -u github.com/nshmura/dsio
 ```
 
-
-### Authentication
+### How to authenticate
 1. Create [service account](https://cloud.google.com/iam/docs/managing-service-account-keys), and download a JSON file that contains the private key. 
 2. Set `DSIO_KEY_FILE` and `DSIO_PROJECT_ID` environment variables. like this:
 ```
@@ -35,6 +34,15 @@ Or specify `--key-file` and `--project-id` options:
 ```
 $ dsio upsert --key-file <path-to-service_account_file> --project-id <project-id> ...
 ```
+
+### How to connect to local Datastore Emulator
+
+To connect to [local Datastore emnulator](https://cloud.google.com/datastore/docs/tools/datastore-emulator):
+```
+$(gcloud beta emulators datastore env-init)
+```
+
+For more information, please see [this document](https://cloud.google.com/datastore/docs/tools/datastore-emulator#setting_environment_variables).
 
 
 # Bulk upsert entities into Datastore
@@ -82,11 +90,6 @@ $ dsio query 'SELECT * FROM Book LIMIT 2' -n production
 **CAUTION:** In CSV (and TSV) format, information about types may be dropped in some case, and `noindex` value is removed.
 So in some case, there is no way to restore exactly same entities in Datastore from the generated CSV.
 
-
-# Local Emulator
-
-To connecto to the Cloud Datastore emnulator, follow [this steps](https://cloud.google.com/datastore/docs/tools/datastore-emulator#setting_environment_variables
-).
 
 # Options
 
