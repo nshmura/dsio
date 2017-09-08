@@ -44,20 +44,20 @@ $(gcloud beta emulators datastore env-init)
 For more information, please see [this document](https://cloud.google.com/datastore/docs/tools/datastore-emulator#setting_environment_variables).
 
 
-# Bulk-upsert entities
-To upsert entities from CSV file (e.g. upsert into `Book` kind): 
+# Bulk Upsert
+To upsert entities from CSV file to Datastore: 
+(e.g. upsert into `Book` kind)
 ```
 $ dsio upsert filename.csv -k Book
 ```
 
 
-To upsert entities from YAML file:
+To upsert entities from YAML file to Datastore:
 ```
 $ dsio upsert filename.yaml
 ```
 
-
-To specify namespace (e.g. `development` namespace):
+To specify namespace:
 ```
 $ dsio upsert filename.yaml -n development
 ```
@@ -71,7 +71,7 @@ $ dsio upsert filename.yaml -n development
 
 # Query by GQL
 
-To query entities by [GQL](https://cloud.google.com/datastore/docs/reference/gql_reference):
+To query by [GQL](https://cloud.google.com/datastore/docs/reference/gql_reference):
 ```
 $ dsio query 'SELECT * FROM Book LIMIT 2'
 ```
