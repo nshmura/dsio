@@ -5,7 +5,7 @@
 **This tool is under development. Please use in your own risk.**
 
 ### Features
-- Bulk upsert entities in CSV and YAML file.
+- Bulk upsert entities from CSV and YAML file.
 - Query by GQL from command line.
 
 ### Motivation
