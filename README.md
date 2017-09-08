@@ -22,22 +22,21 @@ like below:
 go get -u github.com/nshmura/dsio
 ```
 
-### How to authenticate
-1. Create [service account](https://cloud.google.com/iam/docs/managing-service-account-keys), and download a JSON file that contains the private key. 
-2. Set `DSIO_KEY_FILE` and `DSIO_PROJECT_ID` environment variables. like this:
-```
-export DSIO_KEY_FILE=/path/to/service_account_file.json
-export DSIO_PROJECT_ID=your-gcp-project-id
-```
+### Authentication
+1. Create a [service account](https://developers.google.com/identity/protocols/OAuth2ServiceAccount#creatinganaccount). 
+2. Set the following environment variable:
 
-Or specify `--key-file` and `--project-id` options:
+ - **DSIO_KEY_FILE** : Developers Console project's ID (e.g. bamboo-shift-455)
+ - **DSIO_PROJECT_ID** : The path to the JSON key file.
+
+Or execute `dsio` command with `--key-file` and `--project-id` options:
 ```
 $ dsio upsert --key-file <path-to-service_account_file> --project-id <project-id> ...
 ```
 
-### How to connect to local Datastore Emulator
+### How to connect to Datastore Emulator
 
-To connect to [local Datastore emnulator](https://cloud.google.com/datastore/docs/tools/datastore-emulator):
+If you want to connect to [local Datastore emnulator](https://cloud.google.com/datastore/docs/tools/datastore-emulator), execute below command:
 ```
 $(gcloud beta emulators datastore env-init)
 ```
@@ -45,7 +44,7 @@ $(gcloud beta emulators datastore env-init)
 For more information, please see [this document](https://cloud.google.com/datastore/docs/tools/datastore-emulator#setting_environment_variables).
 
 
-# Bulk upsert entities into Datastore
+# Bulk-upsert entities
 To upsert entities from CSV file (e.g. upsert into `Book` kind): 
 ```
 $ dsio upsert filename.csv -k Book
@@ -70,7 +69,7 @@ $ dsio upsert filename.yaml -n development
  - [CSV,TSV,YAML file samples](./samples/)
 
 
-# Query entities by GQL from Datastore
+# Query by GQL
 
 To query entities by [GQL](https://cloud.google.com/datastore/docs/reference/gql_reference):
 ```
