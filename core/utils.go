@@ -43,8 +43,9 @@ func GetTypeOfKey(k *datastore.Key) (t DatastoreType, err error) {
 		t = TypeString
 	} else if k.ID > 0 {
 		t = TypeInt
+	} else {
+		err = fmt.Errorf("unsupported key:%v", k)
 	}
-	err = fmt.Errorf("unsupported key:%v", k)
 	return
 }
 
