@@ -14,7 +14,7 @@ import (
 
 type FileParser interface {
 	ReadFile(filename string) error
-	Parse() (*[]datastore.Entity, error)
+	Parse(kind string) (*[]datastore.Entity, error)
 }
 
 type KindData struct {
@@ -41,6 +41,10 @@ type Parser struct {
 }
 
 func (p *Parser) SetKind(optionKind string) error {
+	if optionKind == "" {
+		return nil
+	}
+
 	fileKind := p.kindData.Scheme.Kind
 
 	if fileKind == "" {
@@ -56,15 +60,17 @@ func (p *Parser) SetKind(optionKind string) error {
 	return nil
 }
 
-func (p *Parser) SetNameSpace(ctx Context) error {
-	if ctx.Namespace != "" {
-		namespace := p.kindData.Scheme.Namespace
-		if namespace == "" {
-			namespace = ctx.Namespace
+func (p *Parser) SetNameSpace(namespace string) error {
+
+	if namespace != "" && p.kindData.Scheme.Namespace != "" {
+		if namespace != p.kindData.Scheme.Namespace {
+			return fmt.Errorf("different namespace:'%v', file:'%v'", namespace, p.kindData.Scheme.Namespace)
+		} else {
+			return nil
 		}
-		if namespace != ctx.Namespace {
-			return fmt.Errorf("different namespace. flag:'%v' != file:'%v'", ctx.Namespace, namespace)
-		}
+	}
+
+	if p.kindData.Scheme.Namespace == "" {
 		p.kindData.Scheme.Namespace = namespace
 	}
 	return nil

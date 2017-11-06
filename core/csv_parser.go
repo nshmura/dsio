@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"cloud.google.com/go/datastore"
@@ -17,21 +18,13 @@ type CSVParser struct {
 	names     []string
 }
 
-func NewCSVParser(kind string, separator rune) (*CSVParser, error) {
-	p := &CSVParser{
+func NewCSVParser(separator rune) *CSVParser {
+	return &CSVParser{
 		parser: &Parser{
 			&KindData{},
 		},
 		separator: separator,
 	}
-
-	if err := p.parser.SetKind(kind); err != nil {
-		return nil, err
-	}
-	if err := p.parser.SetNameSpace(ctx); err != nil {
-		return nil, err
-	}
-	return p, nil
 }
 
 func (p *CSVParser) ReadFile(filename string) error {
@@ -95,16 +88,35 @@ func (p *CSVParser) parsePropertyType(record []string) {
 	p.parser.kindData.Scheme.Properties = properties
 }
 
-func (p *CSVParser) parseEntity(record []string) {
+func (p *CSVParser) parseEntity(record []string) error {
 	entity := Entity{}
 	for i, value := range record {
+
+		if IsKeyValueName(p.names[i]) {
+			if typ, _ := p.parser.getTypeInScheme(p.parser.kindData.Scheme, p.names[i]); IsInt(typ) {
+				v, err := strconv.ParseInt(value, 10, 64)
+				if err != nil {
+					return err
+				}
+				entity[p.names[i]] = v
+				continue
+			}
+		}
+
 		entity[p.names[i]] = value
 	}
 
 	p.parser.kindData.Entities = append(p.parser.kindData.Entities, entity)
+	return nil
 }
 
-func (p *CSVParser) Parse() (*[]datastore.Entity, error) {
+func (p *CSVParser) Parse(kind string) (*[]datastore.Entity, error) {
+	if err := p.parser.SetKind(kind); err != nil {
+		return nil, err
+	}
+	if err := p.parser.SetNameSpace(ctx.Namespace); err != nil {
+		return nil, err
+	}
 	if err := p.parser.Validate(ctx); err != nil {
 		return nil, err
 	}

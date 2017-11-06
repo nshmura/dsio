@@ -42,10 +42,7 @@ func Upsert(ctx core.Context, filename, kind, format string, batchSize int) erro
 	}
 
 	// Parser
-	parser, err := getParser(kind, format)
-	if err != nil {
-		return err
-	}
+	parser := getParser(format)
 
 	// Read from file
 	if err := parser.ReadFile(filename); err != nil {
@@ -53,7 +50,7 @@ func Upsert(ctx core.Context, filename, kind, format string, batchSize int) erro
 	}
 
 	// Parse
-	dsEntities, err := parser.Parse()
+	dsEntities, err := parser.Parse(kind)
 	if err != nil {
 		return err
 	}
@@ -125,14 +122,14 @@ func detectFileFormat(filename string) (string, error) {
 	}
 }
 
-func getParser(kind, format string) (core.FileParser, error) {
+func getParser(format string) core.FileParser {
 	switch format {
 	case core.FormatCSV:
-		return core.NewCSVParser(kind, ',')
+		return core.NewCSVParser(',')
 	case core.FormatTSV:
-		return core.NewCSVParser(kind, '\t')
+		return core.NewCSVParser('\t')
 	default:
-		return core.NewYAMLParser(kind)
+		return core.NewYAMLParser()
 	}
 }
 

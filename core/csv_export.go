@@ -170,7 +170,8 @@ func (exp *CSVExporter) propertyToString(v interface{}, quote bool) (str string,
 		str = KeyToString(v)
 
 	case time.Time:
-		str = v.In(time.UTC).Format(time.RFC3339)
+		// str = v.In(time.UTC).Format(time.RFC3339)
+		str = v.In(time.Local).Format("2006-01-02 15:04:05")
 
 	case datastore.GeoPoint:
 		str = fmt.Sprintf("[%f, %f]", v.Lat, v.Lng)
