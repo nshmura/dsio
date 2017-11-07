@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"io"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -16,6 +17,7 @@ type CSVParser struct {
 
 	separator rune
 	names     []string
+	types     []string
 }
 
 func NewCSVParser(separator rune) *CSVParser {
@@ -76,15 +78,18 @@ func (p *CSVParser) parsePropertyType(record []string) {
 	properties := p.parser.kindData.Scheme.Properties
 
 	for i, typ := range record {
-
 		if strings.HasSuffix(typ, CsvNoIndexKeyword) {
 			typ = strings.TrimSuffix(typ, CsvNoIndexKeyword)
 			properties[p.names[i]] = []string{typ, KeywordNoIndexValue}
+
+		} else if strings.HasPrefix(typ, string(TypeArray)) {
+			properties[p.names[i]] = ""
+
 		} else {
 			properties[p.names[i]] = typ
 		}
+		p.types = append(p.types, typ)
 	}
-
 	p.parser.kindData.Scheme.Properties = properties
 }
 
@@ -92,18 +97,63 @@ func (p *CSVParser) parseEntity(record []string) error {
 	entity := Entity{}
 	for i, value := range record {
 
+		realType := p.types[i]
+
 		if IsKeyValueName(p.names[i]) {
-			if typ, _ := p.parser.getTypeInScheme(p.parser.kindData.Scheme, p.names[i]); IsInt(typ) {
+			typ, _ := p.parser.getTypeInScheme(p.parser.kindData.Scheme, p.names[i])
+			if IsInt(typ) {
 				v, err := strconv.ParseInt(value, 10, 64)
 				if err != nil {
 					return err
 				}
 				entity[p.names[i]] = v
-				continue
-			}
-		}
 
-		entity[p.names[i]] = value
+			} else {
+				entity[p.names[i]] = value
+			}
+
+		} else if IsArray(realType) {
+			var list []interface{}
+			if entity[p.names[i]] == nil {
+				list = make([]interface{},0)
+			} else {
+				list = entity[p.names[i]].([]interface{})
+			}
+			entity[p.names[i]] = append(list, value)
+
+		} else if strings.HasPrefix(realType, string(TypeArray)) {
+
+			r := regexp.MustCompile("array\\[([0-9]+)\\]\\.(.*)")
+			match := r.FindSubmatch([]byte(realType))
+			idx,err := strconv.Atoi(string(match[1]))
+			if err != nil {
+				return err
+			}
+			name := string(match[2])
+
+			var list []interface{}
+			if entity[p.names[i]] == nil {
+				list = make([]interface{},0)
+			} else {
+				list = entity[p.names[i]].([]interface{})
+			}
+			if len(list) <= idx {
+				list = append(list, make(map[interface{}]interface{}, 0))
+			}
+
+			m := list[idx].(map[interface{}]interface{})
+			m[name] = value
+
+			if v, err := strconv.ParseInt(value, 10, 64); err == nil {
+				m[name] = v
+			}
+			m[name] = value
+
+			entity[p.names[i]] = list
+
+		} else {
+			entity[p.names[i]] = value
+		}
 	}
 
 	p.parser.kindData.Entities = append(p.parser.kindData.Entities, entity)
@@ -131,5 +181,6 @@ func (p *CSVParser) Parse(kind string) (*[]datastore.Entity, error) {
 			res = append(res, entry)
 		}
 	}
+
 	return &res, nil
 }

@@ -104,3 +104,7 @@ func IsNoIndex(value string) bool {
 func IsInt(value string) bool {
 	return value == string(TypeInt) || value == string(TypeInteger)
 }
+
+func IsArray(value string) bool {
+	return value == string(TypeArray)
+}
