@@ -16,21 +16,12 @@ type YAMLParser struct {
 	parser *Parser
 }
 
-func NewYAMLParser(kind string) (*YAMLParser, error) {
-	p := &YAMLParser{
+func NewYAMLParser() *YAMLParser {
+	return &YAMLParser{
 		parser: &Parser{
 			&KindData{},
 		},
 	}
-
-	if err := p.parser.SetKind(kind); err != nil {
-		return nil, err
-	}
-	if err := p.parser.SetNameSpace(ctx); err != nil {
-		return nil, err
-	}
-
-	return p, nil
 }
 
 func (p *YAMLParser) ReadFile(filename string) error {
@@ -43,12 +34,17 @@ func (p *YAMLParser) ReadFile(filename string) error {
 	if err = yaml.Unmarshal([]byte(source), d); err != nil {
 		return err
 	}
-
 	p.parser.kindData = d
 	return nil
 }
 
-func (p *YAMLParser) Parse() (*[]datastore.Entity, error) {
+func (p *YAMLParser) Parse(kind string) (*[]datastore.Entity, error) {
+	if err := p.parser.SetKind(kind); err != nil {
+		return nil, err
+	}
+	if err := p.parser.SetNameSpace(ctx.Namespace); err != nil {
+		return nil, err
+	}
 	if err := p.parser.Validate(ctx); err != nil {
 		return nil, err
 	}

@@ -5,6 +5,8 @@ import (
 	"encoding/csv"
 	"io"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"cloud.google.com/go/datastore"
@@ -15,23 +17,16 @@ type CSVParser struct {
 
 	separator rune
 	names     []string
+	types     []string
 }
 
-func NewCSVParser(kind string, separator rune) (*CSVParser, error) {
-	p := &CSVParser{
+func NewCSVParser(separator rune) *CSVParser {
+	return &CSVParser{
 		parser: &Parser{
 			&KindData{},
 		},
 		separator: separator,
 	}
-
-	if err := p.parser.SetKind(kind); err != nil {
-		return nil, err
-	}
-	if err := p.parser.SetNameSpace(ctx); err != nil {
-		return nil, err
-	}
-	return p, nil
 }
 
 func (p *CSVParser) ReadFile(filename string) error {
@@ -83,28 +78,98 @@ func (p *CSVParser) parsePropertyType(record []string) {
 	properties := p.parser.kindData.Scheme.Properties
 
 	for i, typ := range record {
-
 		if strings.HasSuffix(typ, CsvNoIndexKeyword) {
 			typ = strings.TrimSuffix(typ, CsvNoIndexKeyword)
 			properties[p.names[i]] = []string{typ, KeywordNoIndexValue}
+
+		} else if strings.HasPrefix(typ, string(TypeArray)) {
+			properties[p.names[i]] = ""
+
 		} else {
 			properties[p.names[i]] = typ
 		}
+		p.types = append(p.types, typ)
 	}
-
 	p.parser.kindData.Scheme.Properties = properties
 }
 
-func (p *CSVParser) parseEntity(record []string) {
+func (p *CSVParser) parseEntity(record []string) error {
 	entity := Entity{}
 	for i, value := range record {
-		entity[p.names[i]] = value
+
+		realType := p.types[i]
+
+		if IsKeyValueName(p.names[i]) {
+			typ, _ := p.parser.getTypeInScheme(p.parser.kindData.Scheme, p.names[i])
+			if IsInt(typ) {
+				v, err := strconv.ParseInt(value, 10, 64)
+				if err != nil {
+					return err
+				}
+				entity[p.names[i]] = v
+
+			} else {
+				entity[p.names[i]] = value
+			}
+
+		} else if IsArray(realType) {
+			var list []interface{}
+			if entity[p.names[i]] == nil {
+				list = make([]interface{},0)
+			} else {
+				list = entity[p.names[i]].([]interface{})
+			}
+			entity[p.names[i]] = append(list, value)
+
+		} else if strings.HasPrefix(realType, string(TypeArray)) {
+
+			// TODO Refactring
+
+			r := regexp.MustCompile("array\\[([0-9]+)\\]\\.(.*)")
+			match := r.FindSubmatch([]byte(realType))
+			idx,err := strconv.Atoi(string(match[1]))
+			if err != nil {
+				return err
+			}
+			name := string(match[2])
+
+			var list []interface{}
+			if entity[p.names[i]] == nil {
+				list = make([]interface{},0)
+			} else {
+				list = entity[p.names[i]].([]interface{})
+			}
+			if len(list) <= idx {
+				list = append(list, make(map[interface{}]interface{}, 0))
+			}
+
+			m := list[idx].(map[interface{}]interface{})
+			m[name] = value
+
+			if v, err := strconv.ParseInt(value, 10, 64); err == nil {
+				m[name] = v
+			} else {
+				m[name] = value
+			}
+
+			entity[p.names[i]] = list
+
+		} else {
+			entity[p.names[i]] = value
+		}
 	}
 
 	p.parser.kindData.Entities = append(p.parser.kindData.Entities, entity)
+	return nil
 }
 
-func (p *CSVParser) Parse() (*[]datastore.Entity, error) {
+func (p *CSVParser) Parse(kind string) (*[]datastore.Entity, error) {
+	if err := p.parser.SetKind(kind); err != nil {
+		return nil, err
+	}
+	if err := p.parser.SetNameSpace(ctx.Namespace); err != nil {
+		return nil, err
+	}
 	if err := p.parser.Validate(ctx); err != nil {
 		return nil, err
 	}
@@ -119,5 +184,6 @@ func (p *CSVParser) Parse() (*[]datastore.Entity, error) {
 			res = append(res, entry)
 		}
 	}
+
 	return &res, nil
 }

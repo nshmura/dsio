@@ -100,3 +100,11 @@ func IsCurrentDatetime(name string) bool {
 func IsNoIndex(value string) bool {
 	return value == KeywordNoIndexValue
 }
+
+func IsInt(value string) bool {
+	return value == string(TypeInt) || value == string(TypeInteger)
+}
+
+func IsArray(value string) bool {
+	return value == string(TypeArray)
+}
