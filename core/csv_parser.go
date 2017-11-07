@@ -123,6 +123,8 @@ func (p *CSVParser) parseEntity(record []string) error {
 
 		} else if strings.HasPrefix(realType, string(TypeArray)) {
 
+			// TODO Refactring
+
 			r := regexp.MustCompile("array\\[([0-9]+)\\]\\.(.*)")
 			match := r.FindSubmatch([]byte(realType))
 			idx,err := strconv.Atoi(string(match[1]))
@@ -146,8 +148,9 @@ func (p *CSVParser) parseEntity(record []string) error {
 
 			if v, err := strconv.ParseInt(value, 10, 64); err == nil {
 				m[name] = v
+			} else {
+				m[name] = value
 			}
-			m[name] = value
 
 			entity[p.names[i]] = list
 
