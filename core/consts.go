@@ -101,10 +101,10 @@ func IsNoIndex(value string) bool {
 	return value == KeywordNoIndexValue
 }
 
-func IsInt(value string) bool {
-	return value == string(TypeInt) || value == string(TypeInteger)
+func IsInt(typ string) bool {
+	return typ == string(TypeInt) || typ == string(TypeInteger)
 }
 
-func IsArray(value string) bool {
-	return value == string(TypeArray)
+func IsArray(typ string) bool {
+	return typ == string(TypeArray)
 }

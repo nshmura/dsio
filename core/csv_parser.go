@@ -125,13 +125,14 @@ func (p *CSVParser) parseEntity(record []string) error {
 
 			// TODO Refactring
 
-			r := regexp.MustCompile("array\\[([0-9]+)\\]\\.(.*)")
+			r := regexp.MustCompile("array\\[([0-9]+)\\]\\.([^:]+):(.+)")
 			match := r.FindSubmatch([]byte(realType))
 			idx,err := strconv.Atoi(string(match[1]))
 			if err != nil {
 				return err
 			}
 			name := string(match[2])
+			typ := string(match[3])
 
 			var list []interface{}
 			if entity[p.names[i]] == nil {
@@ -146,7 +147,12 @@ func (p *CSVParser) parseEntity(record []string) error {
 			m := list[idx].(map[interface{}]interface{})
 			m[name] = value
 
-			if v, err := strconv.ParseInt(value, 10, 64); err == nil {
+			// TODO
+			if IsInt(typ) {
+				v, err := strconv.ParseInt(value, 10, 64)
+				if err != nil {
+					return err
+				}
 				m[name] = v
 			} else {
 				m[name] = value
