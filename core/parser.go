@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"reflect"
 
 	"cloud.google.com/go/datastore"
 )
@@ -177,14 +178,15 @@ func (p *Parser) parseKey(kind string, val interface{}, parent *datastore.Key) (
 	switch v := val.(type) {
 	case string:
 		key = p.getDSNamedKey(kind, v, parent)
-	case int:
-		key = p.getDSIDKey(kind, int64(v), parent)
-	case int32:
-		key = p.getDSIDKey(kind, int64(v), parent)
 	case int64:
 		key = p.getDSIDKey(kind, v, parent)
+	case int:
+	case int32:
+	case float32:
+	case float64:
+		key = p.getDSIDKey(kind, int64(v), parent)
 	default:
-		err = fmt.Errorf("key should be string or integer: %v", v)
+		err = fmt.Errorf("key should be string or integer: %v, %v", reflect.TypeOf(val), v)
 	}
 	return
 }
