@@ -1,9 +1,11 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/fatih/color"
+	"github.com/urfave/cli"
 )
 
 func Conform(message interface{}) {
@@ -36,18 +38,10 @@ func Debugf(format string, value ...interface{}) {
 	}
 }
 
-func Error(message interface{}) {
-	color.Red("[ERROR] %v", message)
-	fmt.Println("")
-	fmt.Errorf("%v", message)
+func NewExitError(message interface{}) *cli.ExitError {
+	return cli.NewExitError(errors.New(color.RedString("[ERROR] %v", message)), 1)
 }
 
-func Errorf(format string, value ...interface{}) {
-	color.Red("[ERROR] "+format, value...)
-	fmt.Println("")
-	fmt.Errorf(format, value...)
-}
-
-func Panicf(format string, value ...interface{}) string {
-	return color.RedString("[PANIC] "+format, value...)
+func NewExitErrorf(format string, value ...interface{}) error {
+	return cli.NewExitError(color.RedString("[ERROR] "+format, value...), 1)
 }

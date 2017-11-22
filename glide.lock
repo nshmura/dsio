@@ -1,8 +1,8 @@
-hash: 0cf21e9dbd4819b71f5a5ade9740cb35f749abb0460f12e52ca922b4586f8802
-updated: 2017-08-25T11:58:34.15367357+09:00
+hash: 14c47ed93938ffd805a951672edcbb816f6ad1df6e5e96e071385b1ebbb371ae
+updated: 2017-11-22T14:22:58.189622738+09:00
 imports:
 - name: cloud.google.com/go
-  version: 0f0b8420cb699ac4ce059c63bac263f4301fe95b
+  version: 2d3a6656c17a60b0815b7e06ab0be04eacb6e613
   subpackages:
   - compute/metadata
   - datastore
