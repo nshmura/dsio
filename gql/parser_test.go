@@ -3,6 +3,7 @@ package gql
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -156,13 +157,13 @@ func TestWhereBlob(t *testing.T) {
 }
 
 func TestWhereDatetime(t *testing.T) {
-	q := qry(t, "SELECT * FROM Book WHERE a = DATETIME('yyyy')")
+	q := qry(t, "SELECT * FROM Book WHERE a = DATETIME('2013-09-29T09:30:20-08:00')")
 	cond, ok := q.Where[0].(ForwardConditionExpr)
 	assert.True(t, ok)
 	assert.Equal(t, "a", cond.PropertyName)
 	assert.Equal(t, OP_EQUALS, cond.Comparator)
 	assert.Equal(t, TYPE_DATETIME, cond.Value.Type)
-	assert.Equal(t, "yyyy", cond.Value.V.(DatetimeLiteralExpr).Datetime)
+	assert.Equal(t, "2013-09-29T09:30:20-08:00", cond.Value.V.(time.Time).Format(time.RFC3339))
 }
 
 func TestOrder(t *testing.T) {

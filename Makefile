@@ -17,7 +17,7 @@ lint:
 	golint $$(glide novendor)
 
 yacc:
-	goyacc -o parser.go parser.go.y
+	cd gql; goyacc -o parser.go parser.go.y
 
 yacc-test:
 	go test ./gql/... -v

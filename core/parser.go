@@ -212,10 +212,12 @@ func (p *Parser) getDSIncompleteKey(kind string, parent *datastore.Key) *datasto
 func (p *Parser) parseProperty(name string, val interface{}) (*datastore.Property, error) {
 	d := p.kindData
 
-	spType, noIndex := p.getTypeInScheme(d.Scheme, name)
+	spType, noIndex, err := p.getTypeInScheme(d.Scheme, name)
+	if err != nil {
+		return nil, err
+	}
 
 	var v interface{}
-	var err error
 	if spType == "" {
 		v, noIndex, err = p.parseValueAutomatically(val)
 
@@ -240,24 +242,24 @@ func (p *Parser) parseProperty(name string, val interface{}) (*datastore.Propert
 	}, nil
 }
 
-func (p *Parser) getTypeInScheme(scheme Scheme, name string) (string, bool) {
+func (p *Parser) getTypeInScheme(scheme Scheme, name string) (string, bool, error) {
 	for k, v := range scheme.Properties {
 		if k == name {
 			switch v := v.(type) {
 			case string:
-				return v, false
+				return v, false, nil
 			case nil:
-				return "null", false
+				return "null", false, nil
 			case []string:
-				return v[0], IsNoIndex(v[1])
+				return v[0], IsNoIndex(v[1]), nil
 			case []interface{}:
-				return ToString(v[0]), IsNoIndex(ToString(v[1]))
+				return ToString(v[0]), IsNoIndex(ToString(v[1])), nil
 			default:
-				Errorf("unsupported error:%v", v)
+				return "", false, fmt.Errorf("unsupported error:%v", v)
 			}
 		}
 	}
-	return "", false
+	return "", false, nil
 }
 
 func (p *Parser) parseValueAutomatically(val interface{}) (value interface{}, noIndex bool, err error) {

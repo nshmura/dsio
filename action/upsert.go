@@ -27,11 +27,10 @@ func Upsert(ctx core.Context, filename, kind, format string, batchSize int) erro
 	case "":
 		var err error
 		if format, err = detectFileFormat(filename); err != nil {
-			return errors.New("can not detect file format.")
+			return errors.New("can not detect file format")
 		}
 	default:
-
-		return fmt.Errorf("Format should be yaml, csv or tsv. :%s", format)
+		return fmt.Errorf("format should be yaml, csv or tsv. :%s", format)
 	}
 
 	// BatchSize
@@ -76,8 +75,7 @@ func Upsert(ctx core.Context, filename, kind, format string, batchSize int) erro
 				msg := fmt.Sprintf("Do you want to upsert more entities (No.%d - No.%d)? ", from+1, to)
 				ok, err := core.ConfirmYesNoWithDefault(msg, true)
 				if err != nil {
-					core.Error(err)
-					break
+					return err
 				}
 				if !ok {
 					break
@@ -93,11 +91,11 @@ func Upsert(ctx core.Context, filename, kind, format string, batchSize int) erro
 				if me, ok := err.(datastore.MultiError); ok {
 					for i, e := range me {
 						if e != nil {
-							core.Errorf("Upsert error(entity No.%v): %v\n", i+1, e)
+							return fmt.Errorf("Upsert error(entity No.%v): %v\n", i+1, e)
 						}
 					}
 				} else {
-					core.Errorf("Upsert error: %v\n", err)
+					return fmt.Errorf("Upsert error: %v\n", err)
 				}
 			} else {
 				core.Infof("%d entities ware upserted successfully.\n", len(keys))

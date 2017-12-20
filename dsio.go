@@ -96,12 +96,10 @@ func main() {
 			Action: func(c *cli.Context) error {
 				args := c.Args()
 				if l := len(args); l == 0 {
-					core.Error("Filename is not specified")
-					return nil
+					return core.NewExitError("Filename is not specified")
 
 				} else if l > 1 {
-					core.Error("Too many args")
-					return nil
+					return core.NewExitError("Too many args")
 				}
 				filename := args[0]
 
@@ -110,9 +108,9 @@ func main() {
 
 				err := action.Upsert(ctx, filename, c.String("kind"), c.String("format"), c.Int("batch-size"))
 				if err != nil {
-					core.Error(err)
+					return core.NewExitError(err)
 				}
-				return err
+				return nil
 			},
 		},
 		{
@@ -155,14 +153,12 @@ func main() {
 				case "":
 					format = core.FormatYAML
 				default:
-					core.Errorf("Format should be yaml, csv or tsv")
-					return nil
+					return core.NewExitError("Format should be yaml, csv or tsv")
 				}
 
 				style, err := getTypeStyle(c.String("style"))
 				if err != nil {
-					core.Error(err)
-					return err
+					return core.NewExitError(err)
 				}
 
 				pageSize := c.Int("page-size")
@@ -170,9 +166,7 @@ func main() {
 					pageSize = defaultPageSize
 
 				} else if pageSize > maxPageSize {
-					err := fmt.Errorf("Too large page size:%v", pageSize)
-					core.Error(err)
-					return err
+					return core.NewExitErrorf("too large page size:%v", pageSize)
 				}
 
 				ctx := core.SetContext(c)
@@ -180,9 +174,9 @@ func main() {
 
 				err = action.Query(ctx, query, format, style, c.String("output"), pageSize)
 				if err != nil {
-					core.Error(err)
+					return core.NewExitError(err)
 				}
-				return err
+				return nil
 			},
 		},
 	}

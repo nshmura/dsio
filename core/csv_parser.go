@@ -100,7 +100,10 @@ func (p *CSVParser) parseEntity(record []string) error {
 		realType := p.types[i]
 
 		if IsKeyValueName(p.names[i]) {
-			typ, _ := p.parser.getTypeInScheme(p.parser.kindData.Scheme, p.names[i])
+			typ, _, err := p.parser.getTypeInScheme(p.parser.kindData.Scheme, p.names[i])
+			if err != nil {
+				return err
+			}
 			if IsInt(typ) {
 				v, err := strconv.ParseInt(value, 10, 64)
 				if err != nil {
