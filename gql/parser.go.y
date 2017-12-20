@@ -4,6 +4,7 @@ package gql
 import (
     "fmt"
     "strconv"
+    "time"
 )
 
 type Token struct {
@@ -127,7 +128,7 @@ type BlobLiteralExpr struct {
 }
 
 type DatetimeLiteralExpr struct {
-    Datetime string
+    Datetime time.Time
 }
 
 type KeyPathElementExpr struct {
@@ -582,13 +583,13 @@ value
     }
     | synthetic_literal
     {
-        switch($1.(type)) {
+        switch t := $1.(type) {
         case KeyLiteralExpr:
             $$ = ValueExpr{Type:TYPE_KEY, V:$1 }
         case BlobLiteralExpr:
             $$ = ValueExpr{Type:TYPE_BLOB, V:$1 }
         case DatetimeLiteralExpr:
-            $$ = ValueExpr{Type:TYPE_DATETIME, V:$1 }
+            $$ = ValueExpr{Type:TYPE_DATETIME, V:t.Datetime }
         default:
             panic(fmt.Sprintf("unkown synthetic_literal:%v", $1))
         }
@@ -641,7 +642,11 @@ synthetic_literal
     }
     | DATETIME LEFT_ROUND STRING RIGHT_ROUND
     {
-        $$ = DatetimeLiteralExpr {Datetime: $3.literal}
+        t, err := time.Parse(time.RFC3339 , $3.literal)
+        if err != nil {
+            panic(fmt.Sprintf("can't convert %v to datime", $3.literal))
+        }
+        $$ = DatetimeLiteralExpr {Datetime: t}
     }
 
 opt_project
