@@ -4,11 +4,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-	"reflect"
 
 	"cloud.google.com/go/datastore"
 )
@@ -360,8 +360,11 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 		}
 
 	case TypeInteger, TypeInt:
-		if num, e := strconv.ParseInt(ToString(val), 10, 64); e != nil {
-			err = fmt.Errorf("can not parse '%v' as int.", e)
+		var str = ToString(val)
+		if str == "" {
+			value = 0
+		} else if num, e := strconv.ParseInt(str, 10, 64); e != nil {
+			err = fmt.Errorf("can not parse '%v' as int", e)
 		} else {
 			value = num
 		}
