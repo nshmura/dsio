@@ -364,7 +364,7 @@ func (p *Parser) parseValueWithType(spType DatastoreType, val interface{}) (valu
 		if str == "" {
 			value = 0
 		} else if num, e := strconv.ParseInt(str, 10, 64); e != nil {
-			err = fmt.Errorf("can not parse '%v' as int", e)
+			err = fmt.Errorf("can not parse '%v' as int. err:%v", str, e)
 		} else {
 			value = num
 		}
