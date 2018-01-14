@@ -3,6 +3,7 @@ package core
 import (
 	"bufio"
 	"encoding/csv"
+	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -29,6 +30,7 @@ func NewCSVParser(separator rune) *CSVParser {
 	}
 }
 
+// ReadFile read from csv file
 func (p *CSVParser) ReadFile(filename string) error {
 
 	f, err := os.Open(filename)
@@ -53,14 +55,16 @@ func (p *CSVParser) ReadFile(filename string) error {
 		case 0:
 			p.parsePropertyName(record)
 		case 1:
-			p.parsePropertyType(record)
+			if err := p.parsePropertyType(record); err != nil {
+				return err
+			}
 		default:
-			p.parseEntity(record)
+			if err := p.parseEntity(record); err != nil {
+				return err
+			}
 		}
 		i++
 	}
-
-	return nil
 }
 
 func (p *CSVParser) parsePropertyName(record []string) {
@@ -74,11 +78,14 @@ func (p *CSVParser) parsePropertyName(record []string) {
 	p.parser.kindData.Scheme.Properties = properties
 }
 
-func (p *CSVParser) parsePropertyType(record []string) {
+func (p *CSVParser) parsePropertyType(record []string) error {
 	properties := p.parser.kindData.Scheme.Properties
 
 	for i, typ := range record {
-		if strings.HasSuffix(typ, CsvNoIndexKeyword) {
+		if typ == "" {
+			return fmt.Errorf("data type of '%s' should be specified.", p.names[i])
+
+		} else if strings.HasSuffix(typ, CsvNoIndexKeyword) {
 			typ = strings.TrimSuffix(typ, CsvNoIndexKeyword)
 			properties[p.names[i]] = []string{typ, KeywordNoIndexValue}
 
@@ -91,6 +98,7 @@ func (p *CSVParser) parsePropertyType(record []string) {
 		p.types = append(p.types, typ)
 	}
 	p.parser.kindData.Scheme.Properties = properties
+	return nil
 }
 
 func (p *CSVParser) parseEntity(record []string) error {
@@ -118,7 +126,7 @@ func (p *CSVParser) parseEntity(record []string) error {
 		} else if IsArray(realType) {
 			var list []interface{}
 			if entity[p.names[i]] == nil {
-				list = make([]interface{},0)
+				list = make([]interface{}, 0)
 			} else {
 				list = entity[p.names[i]].([]interface{})
 			}
@@ -130,7 +138,7 @@ func (p *CSVParser) parseEntity(record []string) error {
 
 			r := regexp.MustCompile("array\\[([0-9]+)\\]\\.([^:]+):(.+)")
 			match := r.FindSubmatch([]byte(realType))
-			idx,err := strconv.Atoi(string(match[1]))
+			idx, err := strconv.Atoi(string(match[1]))
 			if err != nil {
 				return err
 			}
@@ -139,7 +147,7 @@ func (p *CSVParser) parseEntity(record []string) error {
 
 			var list []interface{}
 			if entity[p.names[i]] == nil {
-				list = make([]interface{},0)
+				list = make([]interface{}, 0)
 			} else {
 				list = entity[p.names[i]].([]interface{})
 			}
