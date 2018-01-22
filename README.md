@@ -26,8 +26,8 @@ go get -u github.com/nshmura/dsio
 1. Create a [service account](https://developers.google.com/identity/protocols/OAuth2ServiceAccount#creatinganaccount). 
 2. Set the following environment variable:
 
- - **DSIO_KEY_FILE** : Developers Console project's ID (e.g. bamboo-shift-455)
- - **DSIO_PROJECT_ID** : The path to the JSON key file.
+ - **DSIO_KEY_FILE** : The path to the JSON key file.
+ - **DSIO_PROJECT_ID** : Developers Console project's ID (e.g. bamboo-shift-455)
 
 Or execute `dsio` command with `--key-file` and `--project-id` options:
 ```
