@@ -22,6 +22,14 @@ like below:
 go get -u github.com/nshmura/dsio
 ```
 
+### Docker image
+
+1. Create a work directory in your file system
+1. Create a Google Cloud Platform service account and store the JSON keys file in a file named `keys.json` in your work dirextory at root level
+2. Run dsio with `docker run -it --rm -v /path/to/your/workdir:/workdir ggalmazor/dsio`
+
+Example: List all kinds `docker run -it --rm -v /path/to/your/workdir:/workdir ggalmazor/dsio query --project-id some-project-id 'SELECT * FROM __kinds__'`
+
 ### Authentication
 1. Create a [service account](https://developers.google.com/identity/protocols/OAuth2ServiceAccount#creatinganaccount). 
 2. Set the following environment variable:
