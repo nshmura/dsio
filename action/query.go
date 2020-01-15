@@ -141,7 +141,7 @@ func convertToDatastoreQuery(namespace string, s *gql.SelectExpr) (string, *data
 	}
 
 	// Filter
-	q, err := setFilter(q, s.Where)
+	q, err := setFilter(q, s.Where, namespace)
 	if err != nil {
 		return "", nil, err
 	}
@@ -176,7 +176,7 @@ func convertToDatastoreQuery(namespace string, s *gql.SelectExpr) (string, *data
 	return kind, q, nil
 }
 
-func setFilter(q *datastore.Query, where []gql.ConditionExpr) (*datastore.Query, error) {
+func setFilter(q *datastore.Query, where []gql.ConditionExpr, namespace string) (*datastore.Query, error) {
 
 	for _, c := range where {
 		switch c.GetComparator() {
@@ -210,7 +210,11 @@ func setFilter(q *datastore.Query, where []gql.ConditionExpr) (*datastore.Query,
 			}
 
 		case gql.OP_EQUALS:
-			q = q.Filter(fmt.Sprintf("%s =", c.GetPropertyName()), c.GetValue().V)
+			v := c.GetValue().V
+			if key, ok := v.(gql.KeyLiteralExpr); ok {
+				v = key.ToDatastoreKey(namespace)
+			}
+			q = q.Filter(fmt.Sprintf("%s =", c.GetPropertyName()), v)
 
 		case gql.OP_LESS:
 			q = q.Filter(fmt.Sprintf("%s <", c.GetPropertyName()), c.GetValue().V)
