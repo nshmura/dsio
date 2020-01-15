@@ -5,6 +5,8 @@ import (
     "fmt"
     "strconv"
     "time"
+
+	"cloud.google.com/go/datastore"
 )
 
 type Token struct {
@@ -121,6 +123,31 @@ type KeyLiteralExpr struct {
     Project string
     Namespace string
     KeyPath []KeyPathElementExpr
+}
+
+func (k KeyLiteralExpr) ToDatastoreKey(defaultNamespace string) *datastore.Key {
+	namespace := defaultNamespace
+	if k.Namespace != "" {
+		namespace = k.Namespace
+	}
+	return datastoreKeyOf(namespace, k.KeyPath) // what to do with project ID? Go API doesn't have a field for it
+}
+
+func datastoreKeyOf(namespace string, keyPath []KeyPathElementExpr) (k *datastore.Key) {
+    if len(keyPath) == 0 {
+    	return nil
+    }
+    parent := datastoreKeyOf(namespace, keyPath[:len(keyPath) - 1])
+    i := keyPath[len(keyPath) - 1]
+    if i.Name != "" {
+        k = datastore.NameKey(i.Kind, i.Name, parent)
+    } else {
+        k = datastore.IDKey(i.Kind, i.ID, parent)
+    }
+    if namespace != "" {
+        k.Namespace = namespace
+    }
+    return
 }
 
 type BlobLiteralExpr struct {
@@ -652,7 +679,7 @@ synthetic_literal
 opt_project
     :
     {
-        $$ = nil
+        $$ = ""
     }
     | PROJECT LEFT_ROUND STRING RIGHT_ROUND COMMA
     {
@@ -662,7 +689,7 @@ opt_project
 opt_namespace
     :
     {
-        $$ = nil
+        $$ = ""
     }
     | NAMESPACE LEFT_ROUND STRING RIGHT_ROUND COMMA
     {
