@@ -51,7 +51,7 @@ func Query(ctx core.Context, gqlStr, format string, style core.TypeStyle, filena
 	}
 
 	core.Debugf("kind = %v\n", kind)
-	core.Debugf("query = %q\n", q)
+	core.Debugf("query = %+v\n", q)
 
 	// Exporter
 	exporter := getExporter(ctx, format, style, kind, writer)
