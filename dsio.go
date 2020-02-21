@@ -86,7 +86,7 @@ func main() {
 				cli.IntFlag{
 					Name:  "batch-size",
 					Value: action.MaxBatchSize,
-					Usage: fmt.Sprintf("number of entities per one multi upsert operation. batch-size should be smaller than %s.", action.MaxBatchSize),
+					Usage: fmt.Sprintf("number of entities per one multi upsert operation. batch-size should be smaller than %d.", action.MaxBatchSize),
 				},
 				FlagServiceAccoutFile,
 				FlagProjectID,
