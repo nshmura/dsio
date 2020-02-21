@@ -4,11 +4,13 @@ go 1.13
 
 require (
 	cloud.google.com/go v0.16.0
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.5.0
 	github.com/golang/protobuf v0.0.0-20170816001514-ab9f9a6dab16
 	github.com/googleapis/gax-go v0.0.0-20170824001441-2cadd475a3e9
 	github.com/mattn/go-colorable v0.0.8-0.20170210172801-5411d3eea597
 	github.com/mattn/go-isatty v0.0.2-0.20170307163044-57fdcb988a5c
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.1.4
 	github.com/urfave/cli v1.20.0
 	golang.org/x/lint v0.0.0-20200130185559-910be7a94367 // indirect
