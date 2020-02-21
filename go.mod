@@ -11,6 +11,7 @@ require (
 	github.com/mattn/go-isatty v0.0.2-0.20170307163044-57fdcb988a5c
 	github.com/stretchr/testify v1.1.4
 	github.com/urfave/cli v1.20.0
+	golang.org/x/lint v0.0.0-20200130185559-910be7a94367 // indirect
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	golang.org/x/oauth2 v0.0.0-20170807180024-9a379c6b3e95
 	golang.org/x/sys v0.0.0-20190412213103-97732733099d
