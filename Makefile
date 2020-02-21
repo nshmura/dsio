@@ -5,16 +5,16 @@ build:
 
 init:
 	go get golang.org/x/tools/cmd/goyacc
-	go get -u github.com/golang/lint/golint
+	go get -u golang.org/x/lint
 
 fmt:
-	go fmt $$(glide novendor)
+	go fmt ./...
 
 test:
-	go test $$(glide novendor)
+	go test ./...
 
 lint:
-	golint $$(glide novendor)
+	golint ./...
 
 yacc:
 	cd gql; goyacc -o parser.go parser.go.y
