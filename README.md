@@ -10,7 +10,7 @@
 
 ### Motivation
 
-I have been developing web application which uses Datastore to store application's master data. I want to version-control master data in Datastore, and want to automatically reflect the changes to Datastore using CI service.<br>
+I have been developing web application using Datastore to store application's master data. I want to version-control master data in Datastore, and want to automatically reflect the changes to Datastore using CI service.<br>
 like below:
 
 ![ci](./docs/ci.png)
@@ -41,7 +41,7 @@ If you want to connect to [local Datastore emnulator](https://cloud.google.com/d
 $(gcloud beta emulators datastore env-init)
 ```
 
-For more information, please see [this document](https://cloud.google.com/datastore/docs/tools/datastore-emulator#setting_environment_variables).
+For more information, please refer to [this document](https://cloud.google.com/datastore/docs/tools/datastore-emulator#setting_environment_variables).
 
 
 # Bulk Upsert
