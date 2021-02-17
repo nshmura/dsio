@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	Version = "No Version Provided"
+	version = "No Version Provided"
 )
 
 const (
@@ -24,29 +24,29 @@ const (
 )
 
 var (
-	FlagServiceAccoutFile = cli.StringFlag{
+	flagServiceAccoutFile = cli.StringFlag{
 		Name:   "key-file",
 		Usage:  "name of GCP service account file.",
 		EnvVar: "DSIO_KEY_FILE",
 	}
 
-	FlagProjectID = cli.StringFlag{
+	flagProjectID = cli.StringFlag{
 		Name:   "project-id",
 		Usage:  "Project ID of GCP.",
 		EnvVar: "DSIO_PROJECT_ID",
 	}
 
-	FlagVerbose = cli.BoolFlag{
+	flagVerbose = cli.BoolFlag{
 		Name:  "verbose, v",
 		Usage: "Make the operation more talkative.",
 	}
 
-	FlagNoColor = cli.BoolFlag{
+	flagNoColor = cli.BoolFlag{
 		Name:  "no-color",
 		Usage: "Disable color output.",
 	}
 
-	FlagNamespace = cli.StringFlag{
+	flagNamespace = cli.StringFlag{
 		Name:  "namespace, n",
 		Usage: "namespace of entities.",
 	}
@@ -62,7 +62,7 @@ func main() {
 
 	app.Name = "dsio"
 	app.Usage = "A command line tool for Google Cloud Datastore."
-	app.Version = Version
+	app.Version = version
 
 	app.Commands = []cli.Command{
 		{
@@ -70,7 +70,7 @@ func main() {
 			Usage:     "Bulk-upsert entities into Datastore.",
 			ArgsUsage: "filename",
 			Flags: []cli.Flag{
-				FlagNamespace,
+				flagNamespace,
 				cli.StringFlag{
 					Name:  "kind, k",
 					Usage: "name of destination kind.",
@@ -86,12 +86,12 @@ func main() {
 				cli.IntFlag{
 					Name:  "batch-size",
 					Value: action.MaxBatchSize,
-					Usage: fmt.Sprintf("number of entities per one multi upsert operation. batch-size should be smaller than %s.", action.MaxBatchSize),
+					Usage: fmt.Sprintf("number of entities per one multi upsert operation. batch-size should be smaller than %d.", action.MaxBatchSize),
 				},
-				FlagServiceAccoutFile,
-				FlagProjectID,
-				FlagVerbose,
-				FlagNoColor,
+				flagServiceAccoutFile,
+				flagProjectID,
+				flagVerbose,
+				flagNoColor,
 			},
 			Action: func(c *cli.Context) error {
 				args := c.Args()
@@ -118,7 +118,7 @@ func main() {
 			Usage:     "Execute a query.",
 			ArgsUsage: `"[<gql_query>]"`,
 			Flags: []cli.Flag{
-				FlagNamespace,
+				flagNamespace,
 				cli.StringFlag{
 					Name:  "output, o",
 					Usage: "output filename. Entities are outputed into this file.",
@@ -138,10 +138,10 @@ func main() {
 					Value: defaultPageSize,
 					Usage: "number of entities to output at once.",
 				},
-				FlagServiceAccoutFile,
-				FlagProjectID,
-				FlagVerbose,
-				FlagNoColor,
+				flagServiceAccoutFile,
+				flagProjectID,
+				flagVerbose,
+				flagNoColor,
 			},
 			Action: func(c *cli.Context) error {
 				query := strings.Join(c.Args(), " ")
